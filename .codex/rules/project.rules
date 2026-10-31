@@ -1,0 +1,31 @@
+prefix_rule(
+    pattern = ["rm", "-rf"],
+    decision = "forbidden",
+    justification = "Recursive forced deletion is irreversible; delete named paths instead.",
+    match = ["rm -rf build"],
+    not_match = ["rm build/out.js"],
+)
+
+prefix_rule(
+    pattern = ["git", "push", "--force"],
+    decision = "forbidden",
+    justification = "A forced push rewrites published history.",
+    match = ["git push --force origin dev"],
+    not_match = ["git push origin dev"],
+)
+
+prefix_rule(
+    pattern = ["git", "reset", "--hard"],
+    decision = "forbidden",
+    justification = "A hard reset discards uncommitted work; the rollback workflow stashes it instead.",
+    match = ["git reset --hard HEAD"],
+    not_match = ["git reset HEAD file.js"],
+)
+
+prefix_rule(
+    pattern = ["git", "clean", "-f"],
+    decision = "forbidden",
+    justification = "A forced clean deletes untracked work that no stash recovers.",
+    match = ["git clean -f -d"],
+    not_match = ["git clean -n"],
+)

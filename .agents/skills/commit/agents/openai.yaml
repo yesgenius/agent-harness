@@ -1,0 +1,7 @@
+interface:
+  display_name: "Commit"
+  short_description: "Commit the current work without pushing anything"
+  default_prompt: "Run the commit workflow for this repository."
+
+policy:
+  allow_implicit_invocation: false

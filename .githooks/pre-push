@@ -1,0 +1,39 @@
+#!/bin/sh
+#
+# pre-push: local barrier in front of the release branch.
+#
+# Only a release moves the release branch. Ordinary pushes are typed the same
+# way and differ by a branch name that is easy to carry over from the previous
+# command, so a push that moves the release branch is refused unless the caller
+# declared a release for that one command.
+#
+# This hook stands against a mistake, not against a decision: --no-verify skips
+# it, and removing core.hooksPath unhooks it.
+#
+# Input, one line per pushed ref, on stdin:
+#   <local ref> <local object> <remote ref> <remote object>
+
+RELEASE_REF='refs/heads/main'
+INTENT_VARIABLE='RELEASE_INTENT'
+INTENT_VALUE='1'
+ALLOWED_EXIT=0
+REFUSED_EXIT=1
+
+intent=$(printenv "$INTENT_VARIABLE" 2>/dev/null) || intent=''
+
+pushes_release=''
+while read -r _local_ref _local_object remote_ref _remote_object; do
+  [ -n "$remote_ref" ] || continue
+  if [ "$remote_ref" = "$RELEASE_REF" ]; then
+    pushes_release='yes'
+  fi
+done
+
+if [ -z "$pushes_release" ] || [ -n "$intent" ]; then
+  exit "$ALLOWED_EXIT"
+fi
+
+printf '%s\n' "pre-push: refusing to move $RELEASE_REF with no release intent declared." >&2
+printf '%s\n' "  If a release is what you meant:" >&2
+printf '%s\n' "    $INTENT_VARIABLE=$INTENT_VALUE git push <remote> ${RELEASE_REF##*/}" >&2
+exit "$REFUSED_EXIT"

@@ -1,0 +1,35 @@
+#!/bin/sh
+#
+# pre-commit: local barrier in front of a commit on the release branch.
+#
+# A release leaves the working copy on the release branch, and the next ordinary
+# task starts in that same copy. An ordinary commit names no branch, so it lands
+# wherever the release left it, and the branch that answers "what are users
+# running" quietly acquires work no user has.
+#
+# This hook stands against a mistake, not against a decision: --no-verify skips
+# it, and removing core.hooksPath unhooks it.
+
+RELEASE_REF='refs/heads/main'
+DEVELOPMENT_BRANCH='dev'
+INTENT_VARIABLE='RELEASE_INTENT'
+INTENT_VALUE='1'
+ALLOWED_EXIT=0
+REFUSED_EXIT=1
+
+head_ref=$(git symbolic-ref --quiet HEAD 2>/dev/null) || head_ref=''
+if [ "$head_ref" != "$RELEASE_REF" ]; then
+  exit "$ALLOWED_EXIT"
+fi
+
+intent=$(printenv "$INTENT_VARIABLE" 2>/dev/null) || intent=''
+if [ -n "$intent" ]; then
+  exit "$ALLOWED_EXIT"
+fi
+
+printf '%s\n' "pre-commit: refusing to commit on ${RELEASE_REF##*/} with no release intent declared." >&2
+printf '%s\n' "  Ordinary work belongs on the development branch:" >&2
+printf '%s\n' "    git stash && git switch $DEVELOPMENT_BRANCH && git stash pop" >&2
+printf '%s\n' "  If a release is what you meant:" >&2
+printf '%s\n' "    $INTENT_VARIABLE=$INTENT_VALUE git commit ..." >&2
+exit "$REFUSED_EXIT"

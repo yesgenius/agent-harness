@@ -1,0 +1,25 @@
+{
+  "name": "agent-harness",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "A project harness that lets a product owner hand work to coding agents without reading the diff.",
+  "license": "MIT",
+  "scripts": {
+    "prepare": "node scripts/install-hooks.js",
+    "workstation:check": "node scripts/check-workstation.js",
+    "code:syntax": "node scripts/check-syntax.js",
+    "code:console-routing": "node scripts/check-console-routing.js",
+    "build:code": "npm run workstation:check && npm run code:syntax && npm run code:console-routing",
+    "fsm:lint": "node scripts/fsm/fsm-lint.js",
+    "fsm:prefixes": "node scripts/fsm/fsm-log-prefixes.js",
+    "fsm:doc": "node scripts/fsm/fsm-to-md.js",
+    "docs:index": "node scripts/llm-context-map.js",
+    "build:docs": "npm run fsm:lint && npm run fsm:prefixes && npm run fsm:doc && npm run docs:index",
+    "build": "npm run build:code && npm run build:docs",
+    "test": "node --test \"tests/**/*.test.js\" \"example/tests/**/*.test.js\"",
+    "testserver": "node scripts/testserver.js",
+    "demo:guards": "node scripts/demo-guards.js",
+    "verify": "npm run build && npm test && git diff --exit-code"
+  }
+}

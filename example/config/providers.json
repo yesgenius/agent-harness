@@ -1,0 +1,9 @@
+{
+  "providers": [
+    {
+      "id": "acme-mail",
+      "name": "AcmeMail",
+      "endpoint": "https://acme-mail.example/api/send"
+    }
+  ]
+}

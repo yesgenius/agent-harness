@@ -1,0 +1,7 @@
+interface:
+  display_name: "Resume here"
+  short_description: "Continue on this machine the work pushed from another one"
+  default_prompt: "Run the resume-here workflow for this repository."
+
+policy:
+  allow_implicit_invocation: false

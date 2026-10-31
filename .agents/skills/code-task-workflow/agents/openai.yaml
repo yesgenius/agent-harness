@@ -1,0 +1,7 @@
+interface:
+  display_name: "Code task workflow"
+  short_description: "Build, locate the spec, implement, get an independent review"
+  default_prompt: "Run the code-task-workflow workflow for this repository."
+
+policy:
+  allow_implicit_invocation: true

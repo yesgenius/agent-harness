@@ -1,0 +1,7 @@
+interface:
+  display_name: "Rollback"
+  short_description: "Stash uncommitted local work"
+  default_prompt: "Run the rollback workflow for this repository."
+
+policy:
+  allow_implicit_invocation: false

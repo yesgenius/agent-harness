@@ -1,0 +1,29 @@
+{
+  "model": "opus",
+  "effortLevel": "high",
+  "env": {
+    "MCP_TIMEOUT": "180000"
+  },
+  "autoMemoryEnabled": false,
+  "permissions": {
+    "allow": [
+      "Read",
+      "Edit",
+      "Write",
+      "Bash(*)",
+      "WebFetch",
+      "WebSearch",
+      "mcp__chrome-devtools"
+    ],
+    "deny": [
+      "Read(.env)",
+      "Bash(rm -rf *)",
+      "Bash(git push --force *)",
+      "Bash(git reset --hard *)",
+      "Bash(git clean -f *)"
+    ]
+  },
+  "enabledMcpjsonServers": [
+    "chrome-devtools"
+  ]
+}

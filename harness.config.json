@@ -1,0 +1,33 @@
+{
+  "instructionFile": "AGENTS.md",
+  "specsDir": "docs/specs",
+  "indexDir": "docs/llm_context",
+  "releaseBranch": "main",
+  "developmentBranch": "dev",
+  "intentVariable": "RELEASE_INTENT",
+  "gitIdentity": null,
+  "processModels": [
+    {
+      "model": "example/process/reminder.fsm.json",
+      "sources": [
+        "example/src"
+      ],
+      "doc": "docs/specs/PROCESS-REMINDER.md"
+    }
+  ],
+  "logging": {
+    "sourceRoots": [
+      "example/src"
+    ],
+    "sink": "example/src/logger.js"
+  },
+  "regression": {
+    "protocol": "docs/specs/REGRESSION.md",
+    "fixturesDir": "example/fixtures",
+    "serve": {
+      "/": "example/fixtures",
+      "/src/": "example/src",
+      "/config/": "example/config"
+    }
+  }
+}

@@ -1,0 +1,7 @@
+interface:
+  display_name: "Push"
+  short_description: "Commit and push the development branch only"
+  default_prompt: "Run the push workflow for this repository."
+
+policy:
+  allow_implicit_invocation: false

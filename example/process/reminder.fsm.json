@@ -1,0 +1,26 @@
+{
+  "name": "reminder",
+  "title": "Процесс: отправка напоминания",
+  "purpose": "Модель необратимой отправки. Текст обязан уйти один раз, а отчёт обязан говорить только то, что доказано.",
+  "initial": "idle",
+  "states": [
+    { "id": "idle", "meaning": "Запрос принят, ничего не записано" },
+    { "id": "intent-recorded", "meaning": "Намерение записано надёжно, после перезапуска оно будет видно", "durable": true },
+    { "id": "sending", "meaning": "Запрос ушёл провайдеру, исход неизвестен" },
+    { "id": "awaiting-proof", "meaning": "Провайдер принял запрос, доставка не доказана" },
+    { "id": "confirmed", "meaning": "Текст найден в ленте получателя", "terminal": true },
+    { "id": "unconfirmed", "meaning": "Принято, но доказательства нет; человек проверяет сам", "terminal": true },
+    { "id": "failed", "meaning": "Отправки не было", "terminal": true },
+    { "id": "duplicate-blocked", "meaning": "Намерение уже записано: возможно, текст ушёл; повтор запрещён, человек проверяет сам", "terminal": true }
+  ],
+  "transitions": [
+    { "id": "reminder.provider-unknown", "from": "idle", "to": "failed", "when": "Провайдера нет в конфиге" },
+    { "id": "reminder.duplicate-blocked", "from": "idle", "to": "duplicate-blocked", "when": "По этому напоминанию уже есть запись" },
+    { "id": "reminder.intent-recorded", "from": "idle", "to": "intent-recorded", "when": "Намерение записано" },
+    { "id": "reminder.send-started", "from": "intent-recorded", "to": "sending", "when": "Запрос отправляется", "irreversible": true },
+    { "id": "reminder.send-refused", "from": "sending", "to": "failed", "when": "Провайдер отказал" },
+    { "id": "reminder.send-accepted", "from": "sending", "to": "awaiting-proof", "when": "Провайдер принял запрос" },
+    { "id": "reminder.delivery-confirmed", "from": "awaiting-proof", "to": "confirmed", "when": "Текст найден в ленте" },
+    { "id": "reminder.delivery-unproven", "from": "awaiting-proof", "to": "unconfirmed", "when": "Срок вышел, текста в ленте нет" }
+  ]
+}
