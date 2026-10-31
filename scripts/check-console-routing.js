@@ -3,27 +3,19 @@
  *
  * The build step and the guard both call `findConsoleProblems`: a private copy of the walk
  * in the guard would let the two enforce different rules while both stayed green.
- * The detection is token-level: it strips comments and strings and looks for the word.
+ * The detection is token-level: it strips comments and string text and looks for the word.
  */
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { loadConfig } from './lib/config.js';
 import { assertFloor, walkFiles } from './lib/scan.js';
+import { stripCommentsAndStrings } from './lib/source-text.js';
 
 const SOURCE_EXTENSIONS = ['.js'];
 const CONSOLE_TOKEN = /\bconsole\b/;
 const FILE_FLOOR = 1;
 const FAILURE_EXIT = 1;
-const COMMENT_OR_STRING = /\/\*[\s\S]*?\*\/|\/\/[^\n]*|'(?:\\.|[^'\\\n])*'|"(?:\\.|[^"\\\n])*"|`(?:\\.|[^`\\])*`/g;
-
-/**
- * Removes comments and string contents, keeping code tokens.
- * @param {string} source JavaScript source.
- * @returns {string} Source with comments and strings blanked.
- */
-export function stripCommentsAndStrings(source) {
-  return source.replace(COMMENT_OR_STRING, ' ');
-}
 
 /**
  * Tells whether a source touches the console.
@@ -53,7 +45,7 @@ export function findConsoleProblems(root = process.cwd()) {
   return problems;
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   const problems = findConsoleProblems();
   for (const problem of problems) process.stderr.write(`console-routing: ${problem}\n`);
   if (problems.length > 0) process.exitCode = FAILURE_EXIT;

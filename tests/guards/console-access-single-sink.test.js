@@ -14,9 +14,26 @@ test('no module reaches the console past the sink', () => {
   assert.deepEqual(findConsoleProblems(), []);
 });
 
+test('a template expression is code, its text is not', () => {
+  assert.equal(touchesConsole('const text = `${console.info(1)}`;'), true);
+  assert.equal(touchesConsole('const text = `${[{ a: `${console.info(1)}` }]}`;'), true);
+  assert.equal(touchesConsole('const text = `${value} console ${other}`;'), false);
+});
+
+test('a regular expression is text, a division is code', () => {
+  assert.equal(touchesConsole('const pattern = /console.log/;'), false);
+  assert.equal(touchesConsole('const pattern = /[/]console.log/;'), false);
+  assert.equal(touchesConsole("const pattern = /it's/; console.log(1);"), true);
+  assert.equal(touchesConsole("const half = total / 2; console.log('/');"), true);
+  assert.equal(touchesConsole("const half = 'a' / 2; console.log('/');"), true);
+  assert.equal(touchesConsole('count++ / console.log(1) / 2;'), true);
+  assert.equal(touchesConsole('const sum = total + /console.log/.source;'), false);
+});
+
 test('the detection sees a console call and ignores a comment or a string', () => {
   assert.equal(touchesConsole('console.log(1)'), true);
   assert.equal(touchesConsole('const c = console; c.log(1)'), true);
   assert.equal(touchesConsole('// console.log(1)'), false);
   assert.equal(touchesConsole("const text = 'console.log';"), false);
+  assert.equal(touchesConsole('const text = `console.log`;'), false);
 });

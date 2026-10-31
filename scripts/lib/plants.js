@@ -41,6 +41,12 @@ export const PLANTS = [
     guard: `${GUARDS}/both-front-ends-share-one-instruction-file.test.js`,
   },
   {
+    story: 'Агент кладёт вторую инструкцию в папку с кодом',
+    path: 'app/AGENTS.md',
+    create: 'Rules for this folder only.\n',
+    guard: `${GUARDS}/both-front-ends-share-one-instruction-file.test.js`,
+  },
+  {
     story: 'В один из двух агентов добавили шаг, во второй забыли',
     path: '.agents/skills/commit/SKILL.md',
     edit: (text) => swap(text, '### Step 0: Build', '### Step 0: Build\n\nSkip this when in a hurry.'),
@@ -59,9 +65,24 @@ export const PLANTS = [
     guard: `${GUARDS}/both-front-ends-apply-the-same-settings.test.js`,
   },
   {
+    story: 'Браузер одного агента запускается другой командой',
+    path: '.mcp.json',
+    edit: (text) => swap(text, '"command": "npx"', '"command": "bunx"'),
+    guard: `${GUARDS}/both-front-ends-apply-the-same-settings.test.js`,
+  },
+  {
     story: 'Барьер выглядит на месте, но больше не отказывает',
     path: '.githooks/pre-push',
     edit: (text) => swap(text, 'exit "$REFUSED_EXIT"', 'exit "$ALLOWED_EXIT"'),
+    guard: `${GUARDS}/the-push-barrier-guards-the-declared-release-branch.test.js`,
+  },
+  {
+    story: 'Воркфлоу проверяет объявленную ветку, а пушит записанную от руки',
+    path: '.claude/skills/push/SKILL.md',
+    edit: (text, root) => {
+      const { developmentBranch } = JSON.parse(readFileSync(join(root, 'harness.config.json'), 'utf8'));
+      return swap(text, 'git push origin <developmentBranch>', `git push origin ${developmentBranch}`);
+    },
     guard: `${GUARDS}/the-push-barrier-guards-the-declared-release-branch.test.js`,
   },
   {
@@ -84,6 +105,13 @@ export const PLANTS = [
     guard: `${GUARDS}/console-access-single-sink.test.js`,
   },
   {
+    story: 'Вызов консоли спрятали внутрь шаблонной строки',
+    path: `${EXAMPLE}/src/dispatch.js`,
+    needs: EXAMPLE,
+    edit: (text) => swap(text, "const logger = createLogger('Dispatch');", "const logger = createLogger(`Dispatch${console.info('debug') ?? ''}`);"),
+    guard: `${GUARDS}/console-access-single-sink.test.js`,
+  },
+  {
     story: 'Проверка перестала видеть файлы и поэтому стала зелёной',
     path: 'harness.config.json',
     needs: EXAMPLE,
@@ -95,6 +123,20 @@ export const PLANTS = [
     path: `${EXAMPLE}/src/dispatch.js`,
     needs: EXAMPLE,
     edit: (text) => swap(text, '[reminder.send-started]', '[reminder.sending]'),
+    guard: `${GUARDS}/every-transition-log-matches-the-process-model.test.js`,
+  },
+  {
+    story: 'Вызов лога закомментировали, префикс остался в файле',
+    path: `${EXAMPLE}/src/dispatch.js`,
+    needs: EXAMPLE,
+    edit: (text) => swap(text, '  logger.info(`[reminder.send-started]', '  // logger.info(`[reminder.send-started]'),
+    guard: `${GUARDS}/every-transition-log-matches-the-process-model.test.js`,
+  },
+  {
+    story: 'Вызов лога заменили строкой с тем же текстом',
+    path: `${EXAMPLE}/src/dispatch.js`,
+    needs: EXAMPLE,
+    edit: (text) => swap(text, '  logger.info(`[reminder.send-started] ${reminder.id}`);', "  void 'logger.info(`[reminder.send-started]`)';"),
     guard: `${GUARDS}/every-transition-log-matches-the-process-model.test.js`,
   },
   {
@@ -116,12 +158,33 @@ export const PLANTS = [
     path: 'package.json',
     edit: (text) => swap(text, 'npm run code:syntax && ', ''),
     guard: `${GUARDS}/the-build-keeps-every-gate.test.js`,
+    only: 'the build refuses what code:syntax checks',
+  },
+  {
+    story: 'Команду проверки заменили пустышкой, имя шага осталось',
+    path: 'package.json',
+    edit: (text) => swap(text, '"code:syntax": "node scripts/check-syntax.js"', '"code:syntax": "echo skipped"'),
+    guard: `${GUARDS}/the-build-keeps-every-gate.test.js`,
+    only: 'the build refuses what code:syntax checks',
+  },
+  {
+    story: 'Из конфигурации убрали все папки проверки синтаксиса',
+    path: 'harness.config.json',
+    edit: (text) => text.replace(/"syntaxRoots": \[[^\]]*\]/, '"syntaxRoots": []'),
+    guard: `${GUARDS}/the-build-keeps-every-gate.test.js`,
+    only: 'a clean copy builds',
   },
   {
     story: 'Воркфлоу сам выставляет автора коммита',
     path: '.claude/skills/commit/SKILL.md',
     edit: (text) => swap(text, 'git commit -m "<message>"', 'git commit --author="Agent <a@b>" -m "<message>"'),
     guard: `${GUARDS}/the-commit-identity-has-one-source.test.js`,
+  },
+  {
+    story: 'Воркфлоу показывает содержимое коммита до проверки на секреты',
+    path: '.claude/skills/commit/SKILL.md',
+    edit: (text) => swap(text, 'npm run --silent secrets:staged\n', ''),
+    guard: `${GUARDS}/a-staged-secret-is-reported-without-its-value.test.js`,
   },
   {
     story: 'Сторож без объяснения, что он защищает',
@@ -137,12 +200,19 @@ export const PLANTS = [
     guard: `${EXAMPLE_GUARDS}/a-published-provider-fix-reaches-a-user-within-an-hour.test.js`,
   },
   {
+    story: 'Константа цела, но конфигурация больше никогда не устаревает',
+    path: `${EXAMPLE}/src/provider-config.js`,
+    needs: EXAMPLE,
+    edit: (text) => swap(text, 'return now - fetchedAt >= PROVIDER_CONFIG_REFRESH_MS;', 'return false;'),
+    guard: `${EXAMPLE_GUARDS}/a-published-provider-fix-reaches-a-user-within-an-hour.test.js`,
+  },
+  {
     story: 'Две строки поменяли местами: отправка раньше записи',
     path: `${EXAMPLE}/src/dispatch.js`,
     needs: EXAMPLE,
     edit: (text) => reorder(
       text,
-      '  await journal.recordIntent(reminder.id);\n',
+      '  const claimed = await journal.claimIntent(reminder.id);\n',
       '  const outcome = await transport.send({ endpoint: provider.endpoint, text: reminder.text });\n',
     ),
     guard: `${EXAMPLE_GUARDS}/no-reminder-leaves-before-the-intent-is-recorded.test.js`,

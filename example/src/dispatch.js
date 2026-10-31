@@ -30,7 +30,9 @@ async function waitForProof(transport, text, { timeoutMs, pollMs }) {
  * @param {{id: string, text: string, providerId: string}} reminder What to send.
  * @param {object} dependencies Collaborators of the process.
  * @param {object[]} dependencies.providers Provider configuration entries.
- * @param {object} dependencies.journal Durable record: `hasIntent(id)`, `recordIntent(id)`.
+ * @param {object} dependencies.journal Durable record: `claimIntent(id)` writes the intent and
+ *   resolves true, or resolves false when it already exists. The check and the write are one
+ *   atomic step: as two steps, two runs at once would both see nothing and both send.
  * @param {object} dependencies.transport Provider access: `send(request)`, `findDelivered(text)`.
  * @param {{timeoutMs: number, pollMs: number}} [dependencies.timing] Proof waiting limits.
  * @returns {Promise<string>} The final status.
@@ -41,12 +43,12 @@ export async function dispatchReminder(reminder, { providers, journal, transport
     logger.error(`[reminder.provider-unknown] ${reminder.id}`);
     return STATUS.FAILED;
   }
-  if (await journal.hasIntent(reminder.id)) {
+
+  const claimed = await journal.claimIntent(reminder.id);
+  if (!claimed) {
     logger.error(`[reminder.duplicate-blocked] ${reminder.id}`);
     return STATUS.DUPLICATE_BLOCKED;
   }
-
-  await journal.recordIntent(reminder.id);
   logger.info(`[reminder.intent-recorded] ${reminder.id}`);
 
   logger.info(`[reminder.send-started] ${reminder.id}`);

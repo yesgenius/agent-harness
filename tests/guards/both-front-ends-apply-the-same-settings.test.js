@@ -23,6 +23,7 @@ const QUOTED_WORD = /"([^"]+)"/g;
 const TOP_LEVEL_KEYS = ['approval_policy', 'sandbox_mode', 'project_doc_fallback_filenames', 'model_reasoning_effort'];
 const FIRST_TABLE = /^\[/m;
 const PINNED_PACKAGE = /@\d+\.\d+\.\d+$/;
+const TOML_COMMAND = /\[mcp_servers\.chrome-devtools\][\s\S]*?command = "([^"]+)"/;
 const TOML_ARGS = /\[mcp_servers\.chrome-devtools\][\s\S]*?args = \[([\s\S]*?)\]/;
 const DENY_FLOOR = 4;
 
@@ -40,9 +41,10 @@ test('every command denied in one front-end is forbidden in the other', () => {
 });
 
 test('both front-ends start the browser server the same way', () => {
-  const firstArgs = JSON.parse(readFileSync(MCP_DECLARATION, 'utf8')).mcpServers[BROWSER_SERVER].args;
+  const first = JSON.parse(readFileSync(MCP_DECLARATION, 'utf8')).mcpServers[BROWSER_SERVER];
   const secondArgs = [...TOML_ARGS.exec(config)[1].matchAll(QUOTED_WORD)].map((match) => match[1]);
-  assert.deepEqual(secondArgs, firstArgs);
+  assert.equal(TOML_COMMAND.exec(config)[1], first.command);
+  assert.deepEqual(secondArgs, first.args);
 });
 
 test('the browser server version is pinned', () => {

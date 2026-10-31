@@ -10,7 +10,7 @@ import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 
 const SOURCE = 'example/src/dispatch.js';
-const RECORD_CALL = 'await journal.recordIntent(';
+const RECORD_CALL = 'await journal.claimIntent(';
 const SEND_CALL = 'await transport.send(';
 
 test('the intent is recorded and awaited before the send', () => {

@@ -6,6 +6,11 @@
   "developmentBranch": "dev",
   "intentVariable": "RELEASE_INTENT",
   "gitIdentity": null,
+  "syntaxRoots": [
+    "scripts",
+    "tests",
+    "example"
+  ],
   "processModels": [
     {
       "model": "example/process/reminder.fsm.json",

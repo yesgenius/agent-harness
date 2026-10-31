@@ -17,7 +17,7 @@ Prepare and verify the release locally first. Do not push, create a tag or make 
 After that authorization:
 
 1. Advance the release branch by fast-forward only: `git merge --ff-only`. A merge commit would put a state on the release branch that the development branch never held.
-2. Every commit or push on the release branch declares the barrier intent, for example `RELEASE_INTENT=1 git push origin main`.
+2. Every commit or push on the release branch declares the barrier intent, for example `RELEASE_INTENT=1 git push origin <releaseBranch>`.
 3. Build and verify the release artifact, hand it to the product, and record the full commit it was built from.
 4. Stop until the product confirms that this exact artifact was published.
 5. Only after that confirmation, tag the commit recorded in step 3 and push the tag.

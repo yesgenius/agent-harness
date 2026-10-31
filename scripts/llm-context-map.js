@@ -6,6 +6,7 @@
  */
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { loadConfig } from './lib/config.js';
 import { assertFloor, walkFiles } from './lib/scan.js';
 
@@ -65,7 +66,7 @@ export function renderIndexes(root = process.cwd()) {
   return rendered;
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   const root = process.cwd();
   const rendered = renderIndexes(root);
   for (const [path, content] of rendered) {

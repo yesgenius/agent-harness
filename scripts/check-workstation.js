@@ -7,6 +7,7 @@
 import { execFileSync } from 'node:child_process';
 import { accessSync, constants, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { loadConfig } from './lib/config.js';
 
 const NODE_VERSION_FILE = '.nvmrc';
@@ -56,7 +57,7 @@ export function findWorkstationProblems(root = process.cwd()) {
   return problems;
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   const problems = findWorkstationProblems();
   for (const problem of problems) process.stderr.write(`workstation: ${problem}\n`);
   if (problems.length > 0) process.exitCode = FAILURE_EXIT;

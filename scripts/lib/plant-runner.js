@@ -2,12 +2,15 @@
  * @file Applies one planted violation to a throwaway copy of the repository and runs its guard.
  */
 import { spawnSync } from 'node:child_process';
-import { cpSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { basename, join } from 'node:path';
+import { basename, dirname, join, resolve } from 'node:path';
 
 const TEMP_PREFIX = 'harness-plant-';
-const SKIPPED_ENTRIES = new Set(['.git', 'node_modules']);
+const PACKAGES_DIRECTORY = 'node_modules';
+const TEST_NAME_ARGUMENT = '--test-name-pattern=';
+const LINK_TYPE = 'junction';
+const SKIPPED_ENTRIES = new Set(['.git', PACKAGES_DIRECTORY]);
 // Set by a running test runner. A nested `node --test` that inherits it runs nothing and exits
 // clean, which would make every plant look uncaught, or every guard look alive.
 const TEST_RUNNER_MARKER = 'NODE_TEST_CONTEXT';
@@ -23,15 +26,36 @@ export function plantApplies(plant, root) {
 }
 
 /**
+ * Makes a throwaway copy of the repository in the system temp directory. Installed packages are
+ * linked, not copied, so a build that needs them runs in the copy as it runs here.
+ * @param {string} root Repository root.
+ * @returns {string} Path of the copy; the caller removes it.
+ */
+export function copyRepository(root) {
+  const directory = mkdtempSync(join(tmpdir(), TEMP_PREFIX));
+  try {
+    cpSync(root, directory, { recursive: true, filter: (source) => !SKIPPED_ENTRIES.has(basename(source)) });
+    const packages = resolve(root, PACKAGES_DIRECTORY);
+    if (existsSync(packages)) symlinkSync(packages, join(directory, PACKAGES_DIRECTORY), LINK_TYPE);
+    return directory;
+  } catch (error) {
+    rmSync(directory, { recursive: true, force: true });
+    throw error;
+  }
+}
+
+/**
  * Runs a guard against a copy of the repository.
  * @param {string} directory Copy to run in.
  * @param {string} guard Guard path.
+ * @param {string} [only] Name of the one test to run, for a guard too slow to run whole per plant.
  * @returns {boolean} True when the guard failed, meaning it caught the violation.
  */
-function guardFails(directory, guard) {
+function guardFails(directory, guard, only) {
   const env = { ...process.env };
   delete env[TEST_RUNNER_MARKER];
-  return spawnSync(process.execPath, ['--test', guard], { cwd: directory, stdio: 'pipe', env }).status !== 0;
+  const filter = only ? [`${TEST_NAME_ARGUMENT}${only}`] : [];
+  return spawnSync(process.execPath, ['--test', ...filter, guard], { cwd: directory, stdio: 'pipe', env }).status !== 0;
 }
 
 /**
@@ -41,12 +65,12 @@ function guardFails(directory, guard) {
  * @returns {{cleanPassed: boolean, caught: boolean}} Guard results.
  */
 export function runPlant(plant, root) {
-  const directory = mkdtempSync(join(tmpdir(), TEMP_PREFIX));
+  const directory = copyRepository(root);
   try {
-    cpSync(root, directory, { recursive: true, filter: (source) => !SKIPPED_ENTRIES.has(basename(source)) });
-    const cleanPassed = !guardFails(directory, plant.guard);
+    const cleanPassed = !guardFails(directory, plant.guard, plant.only);
     const target = join(directory, plant.path);
     if (plant.create) {
+      mkdirSync(dirname(target), { recursive: true });
       writeFileSync(target, plant.create);
     } else {
       const before = readFileSync(target, 'utf8');
@@ -54,7 +78,7 @@ export function runPlant(plant, root) {
       if (after === before) throw new Error(`Plant changed nothing: ${plant.story}`);
       writeFileSync(target, after);
     }
-    return { cleanPassed, caught: guardFails(directory, plant.guard) };
+    return { cleanPassed, caught: guardFails(directory, plant.guard, plant.only) };
   } finally {
     rmSync(directory, { recursive: true, force: true });
   }

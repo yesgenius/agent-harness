@@ -41,9 +41,10 @@ Once the change builds and its validation passes, and before it is reported, hav
 
 The review covers only the paths this task changed. Take them from `git status --short --untracked-files=all` and keep the ones this task changed. Never review "all uncommitted changes": the working tree may hold changes that are not this task's.
 
-- Claude Code: invoke the `code-review` skill with the level first and the paths after it: `/code-review high <path> <path> …`.
+- Claude Code, when the `code-review` skill is available: invoke it with the level first and the paths after it: `/code-review high <path> <path> …`.
 - Codex: `codex review "Review only these paths: <path> <path> …. Read each change with git diff HEAD -- <path> <path> … and nothing else; for an untracked file in the list, read the file itself. Project rules are in AGENTS.md."`
+- Either front-end, when neither command exists there: give the same instruction to a new session or subagent that holds none of this task's history, and tell it to report defects and change nothing.
 
-Fix each confirmed finding and run the validation again. The report names the findings fixed and the ones dismissed, each with its reason. If the review tool is unavailable or cannot be held to the list, stop and say so: a skipped review is reported, never implied.
+Fix each confirmed finding and run the validation again. The report names the findings fixed and the ones dismissed, each with its reason. If no such reviewer can be started or held to the list, stop and say so: a skipped review is reported, never implied.
 
 Review adds to the build, the tests and the manual check; it replaces none of them.

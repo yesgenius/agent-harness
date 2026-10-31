@@ -23,8 +23,11 @@ const behaviour = BEHAVIOURS[BEHAVIOUR];
 const recorded = new Set(behaviour.intentExists ? [REMINDER_ID] : []);
 
 const journal = {
-  hasIntent: async (id) => recorded.has(id),
-  recordIntent: async (id) => void recorded.add(id),
+  claimIntent: async (id) => {
+    if (recorded.has(id)) return false;
+    recorded.add(id);
+    return true;
+  },
 };
 
 const transport = {

@@ -111,7 +111,7 @@ This file is the one instruction file: add no `CLAUDE.md`, `CLAUDE.local.md`, `A
 - `resume-here` — continue on this machine the work pushed from another one. Commits and pushes nothing and discards no work.
 - `release` — prepare and advance a release under `docs/specs/RELEASE.md`.
 
-One of these starts only when it is asked for by name; an agent never starts one on its own initiative. The procedure for an ordinary code task is not on this list — it is `code-task-workflow`, and it writes nothing outside this repository.
+One of these starts only when it is asked for by name; an agent never starts one on its own initiative. The procedure for an ordinary code task is not on this list — it is `code-task-workflow`, and the only thing it writes outside this repository is the temporary test copies in the system temp directory, which the tests remove.
 
 ## Before finishing a code change
 

@@ -39,9 +39,20 @@ git status --short --untracked-files=all
 
 An empty status means there is nothing to commit: skip to Step 5, which pushes commits already made.
 
-The commit takes every change the status lists, unless the user named a narrower scope. Stage with `git add .` or `git add -- <path>...`, then read `git diff --staged --name-status` and `git diff --staged`.
+The commit takes every change the status lists, unless the user named a narrower scope. Stage with `git add .` or `git add -- <path>...`, then check what is staged, before anything prints its content:
 
-Stop and ask, leaving the index as it is, when the staged names include a path outside the scope or miss one inside it, or when the staged content carries what looks like a credential. Do not change anything to make either condition pass.
+```sh
+git diff --staged --name-status
+npm run --silent secrets:staged
+```
+
+The scan names a path and the kind of finding, never the value. If it refuses, stop and ask, leaving the index as it is, and do not open the paths it named. Once it passes, read the content:
+
+```sh
+git diff --staged
+```
+
+Stop and ask, leaving the index as it is, when the staged names include a path outside the scope or miss one inside it, or when the staged content carries what looks like a credential the scan missed. Do not change anything to make either condition pass.
 
 ### Step 4: Commit
 
@@ -50,15 +61,15 @@ Use a conventional commit message: `<type>(<scope>): <subject>`. Never pass `--n
 ### Step 5: Push and verify
 
 ```sh
-git log --oneline origin/dev..dev
+git log --oneline origin/<developmentBranch>..<developmentBranch>
 ```
 
-These are the commits the push will send. If the list is empty, report `Nothing to push` and stop.
+These are the commits the push will send, with `<developmentBranch>` read from `harness.config.json`. If the list is empty, report `Nothing to push` and stop.
 
-Run these commands sequentially, never chained with `&&`:
+`<developmentBranch>` is the value from `harness.config.json`. Run these commands sequentially, never chained with `&&`:
 
 ```sh
-git push origin dev
+git push origin <developmentBranch>
 git status --short --branch --untracked-files=all
 ```
 

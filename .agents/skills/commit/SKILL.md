@@ -30,17 +30,23 @@ git status --short --untracked-files=all
 
 Only an empty status means `Nothing to commit`; then stop.
 
-The commit takes every change the status lists, unless the user named a narrower scope. Stage the full scope with `git add .`, or only the named paths with `git add -- <path>...`. Then read what is staged:
+The commit takes every change the status lists, unless the user named a narrower scope. Stage the full scope with `git add .`, or only the named paths with `git add -- <path>...`. Then check what is staged, before anything prints its content:
 
 ```sh
 git diff --staged --name-status
+npm run --silent secrets:staged
+```
+
+The scan names a path and the kind of finding, never the value. If it refuses, stop and ask, leaving the index as it is, and do not open the paths it named. Once it passes, read the content:
+
+```sh
 git diff --staged
 ```
 
 Stop and ask, leaving the index as it is, when:
 
 - the staged names include a path outside the scope, or miss one inside it;
-- the staged content carries what looks like a credential: a token, key, password, cookie or session identifier.
+- the staged content carries what looks like a credential the scan missed: a token, key, password, cookie or session identifier.
 
 Do not unstage, edit or delete files, and do not change ignore rules, to make either condition pass: what belongs in the commit is the user's call.
 

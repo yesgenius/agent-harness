@@ -13,7 +13,7 @@ import { loadConfig } from '../../scripts/lib/config.js';
 import { assertFloor, walkFiles } from '../../scripts/lib/scan.js';
 
 const SHADOW_FILES = ['CLAUDE.md', 'CLAUDE.local.md', '.claude/CLAUDE.md', '.claude/AGENTS.md', 'AGENTS.override.md'];
-const NESTED_NAMES = ['AGENTS.md', 'CLAUDE.md'];
+const NESTED_NAMES = ['AGENTS.md', 'CLAUDE.md', 'AGENTS.override.md', 'CLAUDE.local.md'];
 const REQUIRED_SECTIONS = [
   '## HARD PROHIBITIONS',
   '## Before ANY code task',
@@ -23,7 +23,7 @@ const REQUIRED_SECTIONS = [
 ];
 const CODEX_CONFIG = '.codex/config.toml';
 const EMPTY_FALLBACK = /^project_doc_fallback_filenames = \[\]$/m;
-const SCANNED_DIRECTORIES = ['docs', 'scripts', 'tests', 'example'];
+const WHOLE_TREE = ['.'];
 const FILE_FLOOR = 10;
 
 test('no shadow instruction file exists at the root', () => {
@@ -31,9 +31,10 @@ test('no shadow instruction file exists at the root', () => {
 });
 
 test('no nested instruction file exists', () => {
-  const files = walkFiles(process.cwd(), SCANNED_DIRECTORIES, ['.md']);
+  const files = walkFiles(process.cwd(), WHOLE_TREE, ['.md']);
   assertFloor(files.length, FILE_FLOOR, 'Markdown files');
-  assert.deepEqual(files.filter((file) => NESTED_NAMES.includes(file.split('/').at(-1))), []);
+  const nested = files.filter((file) => file.includes('/') && NESTED_NAMES.includes(file.split('/').at(-1)));
+  assert.deepEqual(nested, []);
 });
 
 test('no fallback file name is declared', () => {
