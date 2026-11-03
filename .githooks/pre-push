@@ -29,11 +29,11 @@ while read -r _local_ref _local_object remote_ref _remote_object; do
   fi
 done
 
-if [ -z "$pushes_release" ] || [ -n "$intent" ]; then
+if [ -z "$pushes_release" ] || [ "$intent" = "$INTENT_VALUE" ]; then
   exit "$ALLOWED_EXIT"
 fi
 
-printf '%s\n' "pre-push: refusing to move $RELEASE_REF with no release intent declared." >&2
+printf '%s\n' "pre-push: refusing to move $RELEASE_REF without $INTENT_VARIABLE=$INTENT_VALUE declared for this command." >&2
 printf '%s\n' "  If a release is what you meant:" >&2
 printf '%s\n' "    $INTENT_VARIABLE=$INTENT_VALUE git push <remote> ${RELEASE_REF##*/}" >&2
 exit "$REFUSED_EXIT"

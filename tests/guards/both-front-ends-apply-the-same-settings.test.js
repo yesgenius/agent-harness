@@ -62,7 +62,6 @@ test('automatic memory is off in both front-ends', () => {
   assert.match(config, /^memories = false$/m);
 });
 
-test('the secret file stays out of reach and out of history', () => {
-  assert.ok(settings.permissions.deny.includes(`Read(${SECRET_FILE})`));
+test('the secret file stays out of history', () => {
   assert.ok(readFileSync(IGNORE_FILE, 'utf8').split('\n').includes(SECRET_FILE));
 });

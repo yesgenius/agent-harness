@@ -3,7 +3,9 @@
  *
  * A log line prefixed with a transition id reads against the model line by line. That only
  * works while the names match, so a renamed id on either side is a failure here. Only a real
- * logging call counts: a prefix left in a comment or in a plain string logs nothing.
+ * logging call counts: a prefix left in a comment or in a plain string logs nothing. The names
+ * are compared as sets: the order the code logs them in is not checked here, and an order that
+ * matters needs a guard of its own.
  */
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';

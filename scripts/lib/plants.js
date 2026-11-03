@@ -77,13 +77,19 @@ export const PLANTS = [
     guard: `${GUARDS}/the-push-barrier-guards-the-declared-release-branch.test.js`,
   },
   {
-    story: 'Воркфлоу проверяет объявленную ветку, а пушит записанную от руки',
+    story: 'Скилл проверяет объявленную ветку, а пушит записанную от руки',
     path: '.claude/skills/push/SKILL.md',
     edit: (text, root) => {
       const { developmentBranch } = JSON.parse(readFileSync(join(root, 'harness.config.json'), 'utf8'));
       return swap(text, 'git push origin <developmentBranch>', `git push origin ${developmentBranch}`);
     },
     guard: `${GUARDS}/the-push-barrier-guards-the-declared-release-branch.test.js`,
+  },
+  {
+    story: 'Проверка перед выпуском снова не видит забытый новый файл',
+    path: 'package.json',
+    edit: (text) => swap(text, '&& npm run tree:clean"', '&& git diff --exit-code"'),
+    guard: `${GUARDS}/verify-refuses-a-tree-with-uncommitted-work.test.js`,
   },
   {
     story: 'Спецификацию переименовали, ссылка в инструкции осталась',
@@ -175,13 +181,13 @@ export const PLANTS = [
     only: 'a clean copy builds',
   },
   {
-    story: 'Воркфлоу сам выставляет автора коммита',
+    story: 'Скилл сам выставляет автора коммита',
     path: '.claude/skills/commit/SKILL.md',
     edit: (text) => swap(text, 'git commit -m "<message>"', 'git commit --author="Agent <a@b>" -m "<message>"'),
     guard: `${GUARDS}/the-commit-identity-has-one-source.test.js`,
   },
   {
-    story: 'Воркфлоу показывает содержимое коммита до проверки на секреты',
+    story: 'Скилл показывает содержимое коммита до проверки на секреты',
     path: '.claude/skills/commit/SKILL.md',
     edit: (text) => swap(text, 'npm run --silent secrets:staged\n', ''),
     guard: `${GUARDS}/a-staged-secret-is-reported-without-its-value.test.js`,
@@ -190,6 +196,31 @@ export const PLANTS = [
     story: 'Сторож без объяснения, что он защищает',
     path: 'tests/guards/a-test-with-no-reason-at-all.test.js',
     create: "import { test } from 'node:test';\ntest('passes', () => {});\n",
+    guard: `${GUARDS}/every-guard-states-its-rule.test.js`,
+  },
+  {
+    story: 'Сторожа добавили, в реестр не внесли',
+    path: 'tests/guards/a-guard-nobody-listed-in-the-register.test.js',
+    create: "/**\n * @file A guard nobody listed in the register.\n *\n * Its rule is stated here and nowhere a person would look it up.\n * It passes, so only the register check can notice it.\n */\nimport { test } from 'node:test';\ntest('passes', () => {});\n",
+    guard: `${GUARDS}/every-guard-states-its-rule.test.js`,
+  },
+  {
+    story: 'Сторожа удалили, строка в реестре осталась',
+    path: 'docs/specs/GUARDS.md',
+    edit: (text) => swap(
+      text,
+      '| --- | --- | --- | --- |\n',
+      '| --- | --- | --- | --- |\n| `a-guard-deleted-long-ago` | Правило, которое уже никто не проверяет | Человек верит строке реестра | 1 |\n',
+    ),
+    guard: `${GUARDS}/every-guard-states-its-rule.test.js`,
+  },
+  {
+    story: 'Реестр обещает намеренную поломку, которой нет',
+    path: 'docs/specs/GUARDS.md',
+    edit: (text) => text.replace(
+      /(\| `every-guard-states-its-rule` \|.*\| )(\d+)( \|)/,
+      (row, start, count, end) => `${start}${Number(count) + 1}${end}`,
+    ),
     guard: `${GUARDS}/every-guard-states-its-rule.test.js`,
   },
   {

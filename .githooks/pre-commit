@@ -23,11 +23,11 @@ if [ "$head_ref" != "$RELEASE_REF" ]; then
 fi
 
 intent=$(printenv "$INTENT_VARIABLE" 2>/dev/null) || intent=''
-if [ -n "$intent" ]; then
+if [ "$intent" = "$INTENT_VALUE" ]; then
   exit "$ALLOWED_EXIT"
 fi
 
-printf '%s\n' "pre-commit: refusing to commit on ${RELEASE_REF##*/} with no release intent declared." >&2
+printf '%s\n' "pre-commit: refusing to commit on ${RELEASE_REF##*/} without $INTENT_VARIABLE=$INTENT_VALUE declared for this command." >&2
 printf '%s\n' "  Ordinary work belongs on the development branch:" >&2
 printf '%s\n' "    git stash && git switch $DEVELOPMENT_BRANCH && git stash pop" >&2
 printf '%s\n' "  If a release is what you meant:" >&2

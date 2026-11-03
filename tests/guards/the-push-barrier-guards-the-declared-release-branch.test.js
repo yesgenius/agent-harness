@@ -19,6 +19,7 @@ const PRE_PUSH = resolve('.githooks/pre-push');
 const PRE_COMMIT = resolve('.githooks/pre-commit');
 const ZERO_OBJECT = '0'.repeat(40);
 const INTENT_VALUE = '1';
+const OTHER_VALUES = ['0', 'no', 'true'];
 const ALLOWED = 0;
 const REFUSED = 1;
 const WORKFLOW_ROOTS = ['.claude/skills', '.agents/skills'];
@@ -72,6 +73,12 @@ test('a push to the release branch passes with declared intent', () => {
   assert.equal(runPrePush(releaseBranch, { [intentVariable]: INTENT_VALUE }), ALLOWED);
 });
 
+test('a push to the release branch is refused with any other intent value', () => {
+  for (const value of OTHER_VALUES) {
+    assert.equal(runPrePush(releaseBranch, { [intentVariable]: value }), REFUSED, `${intentVariable}=${value}`);
+  }
+});
+
 test('a push to the development branch passes', () => {
   assert.equal(runPrePush(developmentBranch), ALLOWED);
 });
@@ -82,6 +89,12 @@ test('a commit on the release branch is refused without intent', () => {
 
 test('a commit on the release branch passes with declared intent', () => {
   assert.equal(runPreCommit(releaseBranch, { [intentVariable]: INTENT_VALUE }), ALLOWED);
+});
+
+test('a commit on the release branch is refused with any other intent value', () => {
+  for (const value of OTHER_VALUES) {
+    assert.equal(runPreCommit(releaseBranch, { [intentVariable]: value }), REFUSED, `${intentVariable}=${value}`);
+  }
 });
 
 test('a commit on the development branch passes', () => {

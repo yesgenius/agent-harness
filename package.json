@@ -9,6 +9,7 @@
     "workstation:check": "node scripts/check-workstation.js",
     "code:syntax": "node scripts/check-syntax.js",
     "secrets:staged": "node scripts/check-staged-secrets.js",
+    "tree:clean": "node scripts/check-clean-tree.js",
     "code:console-routing": "node scripts/check-console-routing.js",
     "build:code": "npm run workstation:check && npm run code:syntax && npm run code:console-routing",
     "fsm:lint": "node scripts/fsm/fsm-lint.js",
@@ -20,6 +21,6 @@
     "test": "node --test \"tests/**/*.test.js\" \"example/tests/**/*.test.js\"",
     "testserver": "node scripts/testserver.js",
     "demo:guards": "node scripts/demo-guards.js",
-    "verify": "npm run build && npm test && git diff --exit-code"
+    "verify": "npm run build && npm test && npm run tree:clean"
   }
 }

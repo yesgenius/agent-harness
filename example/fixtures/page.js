@@ -20,6 +20,8 @@ const BEHAVIOURS = {
 };
 
 const behaviour = BEHAVIOURS[BEHAVIOUR];
+// The journal lives in page memory: this stand has no durable store. A restart is pictured as an
+// intent recorded in advance, which checks the answer to an existing intent, not that it survives.
 const recorded = new Set(behaviour.intentExists ? [REMINDER_ID] : []);
 
 const journal = {

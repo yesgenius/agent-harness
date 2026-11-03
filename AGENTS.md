@@ -5,7 +5,6 @@ on every session: a rule that needs a page of detail links to `docs/specs/`.
 
 ## Core Principles
 
-- **Forward-Only** — no backward-compatibility constraints; adopt breaking changes freely to keep the codebase clean.
 - **Stdlib-only** — prefer native APIs unless that increases complexity.
 
 ### Third-Party Neutrality (HARD RULE)
@@ -30,13 +29,14 @@ One module = one job. If you need "and" to describe what a file does, split it. 
 
 ### Documentation Standard
 
-All functions, classes and modules: JSDoc (English).
+All functions, classes and modules carry a doc comment in English, in the standard format of their language (JSDoc for JavaScript).
 
 ### Project-Specific
 
-<!-- ADOPT: replace this section with your project's own facts; docs/ADOPT.md walks through it. -->
+<!-- Rules for agents that only this project has: storage, log sink, process models. What the product does, for whom, and what it promises is described in docs/specs/, never here. -->
 
-- Sources of truth: `docs/specs/` and the code. Everything else under `docs/` is a working material: a work order, a draft, evidence. Working materials are not sources of truth.
+- Sources of truth: `docs/specs/` and the code. Everything else under `docs/`, except the generated `docs/llm_context/`, is a working material: a guide, a work order, a draft, evidence. Working materials are not sources of truth.
+- Work orders live in `docs/work-orders/`, kept in git; drafts, reports and evidence live in `docs/temp/`, ignored by git. An agent never edits the work order it is running: changing an order is the owner's decision. Rules of the folder: `docs/work-orders/README.md`.
 - Logs: diagnostics go through the one sink declared in `harness.config.json` (`logging.sink`), tagged `[ModuleName]`. A direct console call from any other module is forbidden and fails the build.
 - Process logs: transition logs MUST be prefixed `[<transition-id>]`, copied verbatim from the `id` field of the process model declared in `harness.config.json`. A mismatch fails the build.
 
@@ -75,7 +75,7 @@ Work whose request asks to change no file other than working materials — answe
 
 The product owner does not read diffs. The human verification channel is manual testing plus logs and screenshots.
 
-- Questions to the user must be framed in the language of system behavior — what happens, when, and what is visible. A question that can only be answered by reading the diff is not asked. A purely internal unknown is resolved from `docs/specs/` and the source, or offered as options described by their user-visible consequences.
+- Questions to the user must be framed in the language of system behavior — what happens, when, and what is visible. Framed that way a technical question is fair game and gets an answer; a question that can only be answered by reading the diff is not. A purely internal unknown is resolved from `docs/specs/` and the source, or offered as options described by their user-visible consequences.
 - When a change alters observable behavior, end with a short manual check: what to open, what to do, what the correct result looks like, and the exact log filter (`[ModuleName]`, `[<transition-id>]`) to capture if it does not.
 - Committing is the user's action. Leave finished work in the working tree, report what changed and how it was validated, and commit only when explicitly asked.
 

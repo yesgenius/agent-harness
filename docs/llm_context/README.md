@@ -10,5 +10,6 @@ Find the specification here, its section in the index, and read only that sectio
 | `docs/specs/BROWSER-LANE.md` | `docs/llm_context/index_BROWSER-LANE.md` | Браузерная полоса |
 | `docs/specs/GUARDS.md` | `docs/llm_context/index_GUARDS.md` | Сторожа |
 | `docs/specs/PROCESS-REMINDER.md` | `docs/llm_context/index_PROCESS-REMINDER.md` | Процесс: отправка напоминания |
+| `docs/specs/PRODUCT-REMINDER.md` | `docs/llm_context/index_PRODUCT-REMINDER.md` | Продукт примера: напоминание |
 | `docs/specs/REGRESSION.md` | `docs/llm_context/index_REGRESSION.md` | Прогон по образцам |
 | `docs/specs/RELEASE.md` | `docs/llm_context/index_RELEASE.md` | Контракт выпуска |
