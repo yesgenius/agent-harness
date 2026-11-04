@@ -17,7 +17,7 @@ Execute this workflow only after the user explicitly asks for it. It commits the
 
 ### Step 0: Build
 
-Run `npm run build`. If the build fails, stop and report the failure.
+Run `npm run build`. A `workstation:` failure is fixed on the machine by the remedy it names, then the build runs again (`AGENTS.md`, hard prohibitions). If the build fails otherwise, stop and report the failure.
 
 ### Step 1: Run tests
 

@@ -172,9 +172,9 @@ Files: skill `code-task-workflow`, step 5.
 
 **What the layer does.** The required Node version is written in the project. The build starts with a check of the computer: version, hooks, commit author. The `resume-here` procedure continues on this computer the work pushed from another one and loses nothing.
 
-**What you see.** If the computer is not ready, the build fails and says what to fix.
+**What you see.** If the computer is not ready, the build fails and says what to fix. The agent fixes the computer by that remedy; it never changes the project to fit the computer, and a guard refuses a pin to an odd Node line, which never gets long-term support.
 
-Files: `.nvmrc`, `.gitattributes`, `scripts/check-workstation.js`, skill `resume-here`.
+Files: `.nvmrc`, `.gitattributes`, `scripts/check-workstation.js`, skill `resume-here`. Checks: `the-runtime-pin-is-a-long-term-support-line`.
 
 ### 14. Outside only on your word
 

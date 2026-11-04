@@ -17,7 +17,7 @@ Without the declared intent, the hook `.githooks/pre-commit` refuses a `git comm
 
 ## Sequence
 
-1. On the development branch the `version` field in `package.json` is raised for the new release, and the edit is committed by the `commit` procedure. The owner starts it by naming it.
+1. On the development branch the `version` field in `package.json` is raised for the new release, and the edit is committed by the `commit` procedure. The owner starts it by naming it. The commit that raises the version is the last commit of the release. A change committed after it, even a one-line fix asked for during the release, belongs to the next version: the version is raised again, so a tag never names a state the version number does not describe.
 2. `npm run verify` is green. It ends with the check `scripts/check-clean-tree.js`: any difference from the last commit, a new file someone forgot to add included, fails it and is named by its path. The run on the fixtures from `docs/specs/REGRESSION.md` has passed.
 3. A report to the owner in the language of behavior: what changed for someone who takes the template, and what the run showed. Nothing leaves the machine before the owner's word.
 4. After the owner's word: the release branch is fast-forwarded to the development branch and pushed with `RELEASE_INTENT=1`. That push is the publication. The owner's word is given for this release, not for releases in general.

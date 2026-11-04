@@ -5,8 +5,8 @@
 | # | Section | Lines |
 | --- | --- | --- |
 | 1 | Guards | 1-4 |
-| 2 | Guards of this repository | 5-33 |
-| 3 | When a guard appears | 34-41 |
-| 4 | How a guard is built | 42-51 |
-| 5 | Five techniques | 52-63 |
-| 6 | How to change | 64-69 |
+| 2 | Guards of this repository | 5-34 |
+| 3 | When a guard appears | 35-42 |
+| 4 | How a guard is built | 43-52 |
+| 5 | Five techniques | 53-64 |
+| 6 | How to change | 65-70 |

@@ -123,6 +123,12 @@ export const PLANTS = [
     guard: `${GUARDS}/a-check-started-through-a-link-still-runs.test.js`,
   },
   {
+    story: 'The build stopped on another Node, and the agent pinned the runtime to it',
+    path: '.nvmrc',
+    edit: (text) => `${Number(text.trim()) + 1}\n`,
+    guard: `${GUARDS}/the-runtime-pin-is-a-long-term-support-line.test.js`,
+  },
+  {
     story: 'The agent wrote a specification in the language of the conversation',
     path: 'docs/specs/RELEASE.md',
     edit: (text) => `${text}\n${NON_ENGLISH_SENTENCE}\n`,

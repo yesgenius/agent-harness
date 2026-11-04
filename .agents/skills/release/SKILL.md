@@ -11,7 +11,7 @@ description: >-
 
 Use the release contract in `docs/specs/RELEASE.md`. If that specification is absent or incomplete, stop and report the missing contract instead of inventing a release sequence.
 
-Prepare and verify the release locally first. Do not push, create a tag or make any other external write until the product has explicitly authorized this release.
+Prepare and verify the release locally first. The newest commit of the development branch is the one that raises `version` in `package.json`: `git log -1 --format=%H -G'"version":' <developmentBranch> -- package.json` prints the same commit as `git rev-parse <developmentBranch>`. If any commit came after it, the version is raised again before the release goes on: the contract, step 1. Do not push, create a tag or make any other external write until the product has explicitly authorized this release.
 
 After that authorization:
 

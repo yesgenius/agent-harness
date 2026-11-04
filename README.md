@@ -8,6 +8,8 @@ Works with Claude Code and Codex. Node standard library only, MIT.
 
 ## See it in three minutes
 
+Not a developer, or the computer has no Node and git yet? [Getting started](docs/GETTING-STARTED.md) prepares an empty computer with one prompt to the agent, runs this demonstration and explains it.
+
 ```sh
 git clone https://github.com/yesgenius/agent-harness
 cd agent-harness
@@ -31,6 +33,7 @@ caught    Two lines swapped: the send now runs before the record
 | What | Where |
 | --- | --- |
 | The full skeleton: 15 layers in plain words, what each protects against and what holds it | `docs/SKELETON.md` |
+| Getting started without a developer: prepare the computer, see the demonstration, move the harness | `docs/GETTING-STARTED.md` |
 | How to move it into your project | `docs/SKELETON.md`, section "Moving it into your project" |
 | Instructions for agents | `AGENTS.md` |
 | Skills: `code-task-workflow`, `commit`, `push`, `rollback`, `resume-here`, `release` | `.claude/skills/`, `.agents/skills/` |

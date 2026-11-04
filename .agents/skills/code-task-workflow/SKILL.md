@@ -17,7 +17,7 @@ Steps 0-3 run before implementation; step 4 is the implementation; step 5 runs b
 npm run build
 ```
 
-If an error occurs, stop. Do not work around a failing build. This step is unconditional, however small the change.
+A `workstation:` failure is fixed on the machine by the remedy it names, then the build runs again (`AGENTS.md`, hard prohibitions). On any other error, stop. Do not work around a failing build. This step is unconditional, however small the change.
 
 ## Step 1 — Read the map
 
