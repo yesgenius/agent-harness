@@ -9,7 +9,7 @@
  */
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { isMain } from '../lib/entry.js';
 import { assertFloor, walkFiles } from '../lib/scan.js';
 import { tokenize } from '../lib/source-text.js';
 import { loadModels } from './model.js';
@@ -55,7 +55,7 @@ export function findPrefixProblems(root = process.cwd()) {
   return problems;
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+if (isMain(import.meta)) {
   const problems = findPrefixProblems();
   for (const problem of problems) process.stderr.write(`fsm:prefixes: ${problem}\n`);
   if (problems.length > 0) process.exitCode = FAILURE_EXIT;

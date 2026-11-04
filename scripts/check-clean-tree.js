@@ -7,8 +7,7 @@
  * for every difference from the last commit, untracked files included, and names each path.
  */
 import { execFileSync } from 'node:child_process';
-import { realpathSync } from 'node:fs';
-import { pathToFileURL } from 'node:url';
+import { isMain } from './lib/entry.js';
 
 const FAILURE_EXIT = 1;
 const NUL = '\0';
@@ -17,9 +16,6 @@ const RENAME_CODES = /[RC]/;
 const MAX_STATUS_BYTES = 64 * 1024 * 1024;
 const STATUS_COMMAND = ['status', '--porcelain=v1', '-z', '--untracked-files=all'];
 export const READ_FAILED = 'tree: git status could not be read, so the tree is not checked.';
-// Node runs the main module from its real path, so a symlinked invocation must be resolved too,
-// or this check is skipped and passes.
-const IS_MAIN = Boolean(process.argv[1]) && import.meta.url === pathToFileURL(realpathSync(process.argv[1])).href;
 
 /**
  * Lists every path that differs from the last commit: modified, staged, deleted or untracked.
@@ -39,7 +35,7 @@ export function findUncommitted(root = process.cwd()) {
   return entries;
 }
 
-if (IS_MAIN) {
+if (isMain(import.meta)) {
   try {
     const entries = findUncommitted();
     for (const entry of entries) process.stderr.write(`tree: not committed: ${entry}\n`);

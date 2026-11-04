@@ -7,10 +7,9 @@
 import { execFileSync } from 'node:child_process';
 import { accessSync, constants, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { pathToFileURL } from 'node:url';
 import { loadConfig } from './lib/config.js';
+import { isMain, NODE_VERSION_FILE } from './lib/entry.js';
 
-const NODE_VERSION_FILE = '.nvmrc';
 const HOOKS_PATH = '.githooks';
 const HOOK_FILES = ['pre-commit', 'pre-push'];
 const FAILURE_EXIT = 1;
@@ -57,7 +56,7 @@ export function findWorkstationProblems(root = process.cwd()) {
   return problems;
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+if (isMain(import.meta)) {
   const problems = findWorkstationProblems();
   for (const problem of problems) process.stderr.write(`workstation: ${problem}\n`);
   if (problems.length > 0) process.exitCode = FAILURE_EXIT;

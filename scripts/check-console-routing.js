@@ -7,8 +7,8 @@
  */
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { pathToFileURL } from 'node:url';
 import { loadConfig } from './lib/config.js';
+import { isMain } from './lib/entry.js';
 import { assertFloor, walkFiles } from './lib/scan.js';
 import { stripCommentsAndStrings } from './lib/source-text.js';
 
@@ -45,7 +45,7 @@ export function findConsoleProblems(root = process.cwd()) {
   return problems;
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+if (isMain(import.meta)) {
   const problems = findConsoleProblems();
   for (const problem of problems) process.stderr.write(`console-routing: ${problem}\n`);
   if (problems.length > 0) process.exitCode = FAILURE_EXIT;

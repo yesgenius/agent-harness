@@ -92,6 +92,34 @@ export const PLANTS = [
     guard: `${GUARDS}/verify-refuses-a-tree-with-uncommitted-work.test.js`,
   },
   {
+    story: 'Проверка узнаёт свой запуск по пути: через ссылку она молча пропускается',
+    path: 'scripts/check-clean-tree.js',
+    edit: (text) => swap(text, 'if (isMain(import.meta)) {', 'if (import.meta.url === `file://${process.argv[1]}`) {'),
+    guard: `${GUARDS}/a-check-started-through-a-link-still-runs.test.js`,
+  },
+  {
+    story: 'В другой скрипт вернули самодельную проверку запуска',
+    path: 'scripts/fsm/fsm-log-prefixes.js',
+    edit: (text) => swap(
+      swap(text, "import { readFileSync } from 'node:fs';\n", "import { readFileSync } from 'node:fs';\nimport { pathToFileURL } from 'node:url';\n"),
+      'if (isMain(import.meta)) {',
+      'if (import.meta.url === pathToFileURL(process.argv[1]).href) {',
+    ),
+    guard: `${GUARDS}/a-check-started-through-a-link-still-runs.test.js`,
+  },
+  {
+    story: 'Проверку запуска переписали новой записью, через ссылку она снова пропускается',
+    path: 'scripts/check-console-routing.js',
+    edit: (text) => swap(text, 'if (isMain(import.meta)) {', 'if (import.meta.filename === process.argv.at(1)) {'),
+    guard: `${GUARDS}/a-check-started-through-a-link-still-runs.test.js`,
+  },
+  {
+    story: 'Проверка читает признак запуска сама: на старом Node она молча пропускается',
+    path: 'scripts/check-workstation.js',
+    edit: (text) => swap(text, 'if (isMain(import.meta)) {', 'if (import.meta.main) {'),
+    guard: `${GUARDS}/a-check-started-through-a-link-still-runs.test.js`,
+  },
+  {
     story: 'Спецификацию переименовали, ссылка в инструкции осталась',
     path: 'AGENTS.md',
     edit: (text) => swap(text, 'docs/specs/RELEASE.md', 'docs/specs/RELEASES.md'),

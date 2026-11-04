@@ -8,7 +8,7 @@
  * an unknown shape passes.
  */
 import { execFileSync } from 'node:child_process';
-import { pathToFileURL } from 'node:url';
+import { isMain } from './lib/entry.js';
 
 const FAILURE_EXIT = 1;
 const NUL = '\0';
@@ -53,7 +53,7 @@ export function findStagedSecrets(root = process.cwd()) {
   return findings;
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+if (isMain(import.meta)) {
   try {
     const findings = findStagedSecrets();
     for (const { path, kind } of findings) process.stderr.write(`secrets: ${path}: ${kind}\n`);
