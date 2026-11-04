@@ -17,7 +17,7 @@ const NAMES_COMMAND = ['diff', '--staged', '--name-only', '-z'];
 const DIFF_COMMAND = ['--literal-pathspecs', 'diff', '--staged', '--no-color', '--no-ext-diff', '--'];
 export const SCAN_FAILED = 'secrets: the staged change could not be read, so it is not checked.';
 const SECRET_PATH_KIND = 'credential file';
-const SECRET_PATH = /(?:^|\/)(?:\.env(?:\.(?!example$)[^/]+)?|id_rsa|id_ed25519|credentials\.json|[^/]+\.(?:pem|p12|pfx|key))$/;
+export const SECRET_PATH = /(?:^|\/)(?:\.env(?:\.(?!example$)[^/]+)?|id_rsa|id_ed25519|credentials\.json|[^/]+\.(?:pem|p12|pfx|key))$/;
 const SECRET_SHAPES = [
   { kind: 'private key', pattern: /-----BEGIN [A-Z ]*PRIVATE KEY-----/ },
   { kind: 'prefixed token', pattern: /\b[a-z]{2,5}[-_][A-Za-z0-9]{30,}\b/ },

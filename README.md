@@ -1,14 +1,12 @@
 # agent-harness
 
-A project harness for building software with coding agents when nobody reads the diff. It moves checking from a human reading code to machines that fail loudly, and leaves the human to accept behaviour. Works with Claude Code and Codex. Node standard library only, MIT. AGENTS.md and the skills are in English; docs/, including the specs, is in Russian.
+A project harness for people who build a product with AI coding agents and do not read the diff. It was extracted from a real closed-source product built by one non-programmer. The story behind the rules stayed in that product, so here it starts with the extraction.
 
----
+The harness does not remove acceptance; it changes what you accept. Rules backed by checks are held by machines: breaking one fails the build or the tests. A person accepts what the user sees. Which rules are held only by the text of the instructions, and where the promise ends, is described in `docs/SKELETON.md`.
 
-Обвязка проекта для тех, кто строит продукт руками ИИ-агентов и не читает дифф. Она выделена из настоящего закрытого продукта, который делает один не-программист. История, из которой выросли правила, осталась в том продукте, поэтому здесь она начинается с переноса.
+Works with Claude Code and Codex. Node standard library only, MIT.
 
-Обвязка не отменяет приёмку, она меняет её предмет. Правила, закрытые проверками, держат машины: их нарушение роняет сборку или тесты. Человек принимает то, что видит пользователь. Что держится только текстом инструкции и где граница обещания, описано в `docs/SKELETON.md`.
-
-## Посмотреть за три минуты
+## See it in three minutes
 
 ```sh
 git clone https://github.com/yesgenius/agent-harness
@@ -17,53 +15,57 @@ npm install
 npm run demo:guards
 ```
 
-Нужен Node 26 LTS (`.nvmrc`). Демонстрация ломает копию репозитория каждым намеренным нарушением из `scripts/lib/plants.js` и показывает, какая проверка остановила каждое. Рабочее дерево не меняется. `npm install` заодно направляет git этого клона на хуки из `.githooks/` (скрипт `prepare`, локальная настройка `core.hooksPath`). Если в `harness.config.json` задан `gitIdentity`, он же записывает в этот клон имя и почту автора коммитов.
+You need Node 26 LTS (`.nvmrc`). The demonstration breaks a copy of the repository with every planted violation from `scripts/lib/plants.js` and shows which check stopped each one. The working tree is not changed. `npm install` also points git in this clone at the hooks in `.githooks/` (the `prepare` script, the local `core.hooksPath` setting). If `harness.config.json` sets `gitIdentity`, it also writes the commit author's name and email into this clone.
 
 ```text
-поймано   Барьер выглядит на месте, но больше не отказывает
+caught    The barrier looks in place but no longer refuses
           the-push-barrier-guards-the-declared-release-branch.test.js
-поймано   Проверка перестала видеть файлы и поэтому стала зелёной
+caught    The check stopped seeing files and turned green because of it
           console-access-single-sink.test.js
-поймано   Две строки поменяли местами: отправка раньше записи
+caught    Two lines swapped: the send now runs before the record
           no-reminder-leaves-before-the-intent-is-recorded.test.js
 ```
 
-## Что внутри
+## What is inside
 
-| Что | Где |
+| What | Where |
 | --- | --- |
-| Полный скелет: 15 слоёв простыми словами, от чего каждый защищает и кто его держит | `docs/SKELETON.md` |
-| Как перенести в свой проект | `docs/SKELETON.md`, раздел «Перенос в свой проект» |
-| Инструкция агентам | `AGENTS.md` |
-| Скиллы: `code-task-workflow`, `commit`, `push`, `rollback`, `resume-here`, `release` | `.claude/skills/`, `.agents/skills/` |
-| Настройки и запреты | `.claude/`, `.codex/`, `.mcp.json` |
-| Барьеры веток | `.githooks/` |
-| Сборка и проверки | `scripts/` |
-| Сторожа | `tests/guards/`, список с правилами в `docs/specs/GUARDS.md` |
-| Пример процесса с необратимым шагом, в свой проект не переносится | `example/`, описание в `docs/specs/PRODUCT-REMINDER.md` |
-| Шаблон наряда агенту | `docs/WORK-ORDER-TEMPLATE.md` |
-| Наряды агенту, по файлу на работу | `docs/work-orders/` |
+| The full skeleton: 15 layers in plain words, what each protects against and what holds it | `docs/SKELETON.md` |
+| How to move it into your project | `docs/SKELETON.md`, section "Moving it into your project" |
+| Instructions for agents | `AGENTS.md` |
+| Skills: `code-task-workflow`, `commit`, `push`, `rollback`, `resume-here`, `release` | `.claude/skills/`, `.agents/skills/` |
+| Settings and deny rules | `.claude/`, `.codex/`, `.mcp.json` |
+| Branch barriers | `.githooks/` |
+| Build and checks | `scripts/` |
+| Guards | `tests/guards/`, the list with their rules in `docs/specs/GUARDS.md` |
+| An example process with an irreversible step; it does not move into your project | `example/`, described in `docs/specs/PRODUCT-REMINDER.md` |
+| Work order template | `docs/WORK-ORDER-TEMPLATE.md` |
+| Work orders for the agent, one file per job | `docs/work-orders/` |
 
-## Команды
+## Commands
 
-| Команда | Что делает |
+| Command | What it does |
 | --- | --- |
-| `npm run build` | Быстрые проверки кода и документов, генерация документов |
-| `npm test` | Сторожа и тесты примера, включая посаженные нарушения. Полная проверка — `npm run build`, затем `npm test` |
-| `npm run demo:guards` | Демонстрация для человека |
-| `npm run testserver` | Страницы-образцы для прогона в браузере |
-| `npm run verify` | Сборка, тесты и проверка, что всё закоммичено: и правки, и новые файлы |
+| `npm run build` | Fast checks of code and documents, generation of documents |
+| `npm test` | Guards and the example's tests, planted violations included. The full check is `npm run build`, then `npm test` |
+| `npm run demo:guards` | The demonstration for a person |
+| `npm run testserver` | Fixture pages for the regression run |
+| `npm run verify` | Build, tests and a check that everything is committed: both edits and new files |
 
-## Два предупреждения
+## Language
 
-**Без песочницы.** Настройки разрешают агенту выполнять команды без подтверждения: иначе нельзя выдать наряд и уйти. Запреты ловят случайную команду, а не решение агента: они узнают команды, которые начинаются с `rm -rf`, `rm -fr`, `git push --force`, `git push -f`, `git reset --hard` или `git clean -f`, но не ту же операцию в другой записи (`rm -r -f`, `git push origin +main`) или внутри скрипта. Чтения файлов они не запрещают: агенту с командной строкой такой запрет не помеха. Запрета на чтение `.env` здесь нет намеренно: он остановил бы встроенный инструмент чтения, но не `cat .env` в командной строке, и обещал бы защиту, которой нет. Поэтому секреты в папке проекта не храните и запускайте агента в отдельной среде. Как включить подтверждения, сказано в `docs/SKELETON.md`, раздел «Перенос в свой проект».
+Everything in this repository is in English. A guard, `the-repository-text-stays-in-english`, fails on any letter of a script other than Latin; another language written in Latin letters is left to review. The agent talks to you in the language you write in. Work orders in `docs/work-orders/` are yours and may be in any language. To read these documents in your language in the browser, use the page translation built into it.
 
-**Упрощения.** Проверка консоли и сверка логов читают код по лексемам. Литерал регулярного выражения они отличают от деления по коду перед косой чертой: после закрывающей скобки это догадка, и тогда кавычка внутри литерала может их запутать. Поиск секретов в коммите ловит только известные формы и служит сетью, а не доказательством. Модель процесса хранится в JSON, чтобы обойтись без зависимостей, и `scripts/fsm/fsm-log-prefixes.js` сверяет только логи, а не константы. Для большого проекта это отправная точка.
+## Two warnings
 
-## Что осталось в исходном проекте
+**No sandbox.** The settings let the agent run commands without asking: otherwise you cannot hand over a work order and walk away. The deny rules catch an accidental command, not an agent's decision: they recognize commands that start with `rm -rf`, `rm -fr`, `git push --force`, `git push -f`, `git reset --hard` or `git clean -f`, but not the same operation written another way (`rm -r -f`, `git push origin +main`) or inside a script. They do not forbid reading files: for an agent with a command line such a ban is no obstacle. There is deliberately no ban on reading `.env`: it would stop the built-in read tool but not `cat .env` on the command line, and would promise protection that does not exist. So do not keep secrets in the project folder, and run the agent in a separate environment. How to turn confirmations on is in `docs/SKELETON.md`, section "Moving it into your project".
 
-Только то, что привязано к нему: упаковка и публикация конкретного продукта, выпуск правок конфигурации, блокировка занятого браузерного профиля, плагины и звуковые хуки. Если вам нужно что-то из этого, опишите агенту провал, который хотите остановить.
+**Simplifications.** The console check and the log check read code token by token. They tell a regular expression literal from a division by the code before the slash: after a closing parenthesis this is a guess, and then a quote inside the literal can confuse them. The staged-secret scan catches only known shapes and is a net, not a proof. The process model is stored in JSON to avoid dependencies, and `scripts/fsm/fsm-log-prefixes.js` checks only logs, not constants. For a large project this is a starting point.
 
-## Лицензия
+## What stayed in the original project
+
+Only what is tied to it: packaging and publishing that specific product, releasing configuration fixes, locking a browser profile that is in use, plugins and sound hooks. If you need any of these, describe to the agent the failure you want to stop.
+
+## License
 
 MIT

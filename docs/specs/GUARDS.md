@@ -1,67 +1,68 @@
-# Сторожа
+# Guards
 
-Сторож это тест, который защищает правило проекта, а не функцию продукта. Инструкцию агент может понять по-своему. Красная сборка трактовке не поддаётся.
+A guard is a test that protects a rule of the project, not a feature of the product. An agent may read an instruction its own way. A red build leaves no room for interpretation.
 
-## Сторожа этого репозитория
+## Guards of this repository
 
-Обвязку охраняют сторожа из `tests/guards/`, пример — сторожа из `example/tests/guards/`. В колонке «Поломки» указано, сколько намеренных нарушений из `scripts/lib/plants.js` проверяют сторожа: `npm test` ломает копию репозитория каждым из них и требует, чтобы сторож упал.
+The harness is protected by the guards in `tests/guards/`, the example by the guards in `example/tests/guards/`. The "Plants" column says how many planted violations from `scripts/lib/plants.js` the guard is held to: `npm test` breaks a copy of the repository with each of them and requires the guard to fail.
 
-| Сторож | Правило | Что сломается без него | Поломки |
+| Guard | Rule | What breaks without it | Plants |
 | --- | --- | --- | --- |
-| `both-front-ends-share-one-instruction-file` | У обоих агентов один файл инструкций, без файлов-теней | Правило поправили в одной копии, второй агент работает по старому | 2 |
-| `both-front-ends-apply-the-same-settings` | Запреты, браузер и автопамять у агентов совпадают по смыслу | Одному агенту можно то, что другому запрещено | 3 |
-| `both-front-ends-offer-the-same-workflows` | Скиллы двух агентов совпадают байт в байт | Шаг коммита или выпуска есть только у одного агента | 1 |
-| `a-spec-reference-points-at-the-source-of-truth` | Каждый путь в инструкции, скиллах и спецификациях существует | Агент идёт по ссылке в пустоту и додумывает | 1 |
-| `the-index-matches-the-specs` | Индекс в `docs/llm_context/` собран из текущих спецификаций | Агент читает не те строки и уверен, что прочитал нужное | 1 |
-| `the-build-keeps-every-gate` | Ни один шаг сборки не выкинут и не заменён пустышкой | Сборка стала быстрее и зелёной, потому что перестала проверять | 3 |
-| `console-access-single-sink` | Логи пишутся только через один модуль | Логи нельзя включить и отфильтровать в одном месте | 3 |
-| `every-transition-log-matches-the-process-model` | Метки в логах совпадают с переходами модели процесса | Сломанный прогон нельзя прочитать по логу | 4 |
-| `every-regression-scenario-resolves-to-a-fixture-and-a-rule` | Каждый сценарий прогона ссылается на существующую страницу и переход | Обязательный сценарий агент проходит как получится | 1 |
-| `verify-refuses-a-tree-with-uncommitted-work` | `npm run verify` падает на любой незакоммиченной работе, включая новый файл | Выпуск ушёл без файла, который забыли добавить, а verify был зелёным | 1 |
-| `a-check-started-through-a-link-still-runs` | Команда, запущенная через ссылку на папку, заканчивается так же, как при прямом запуске; признак запуска читается только через `isMain` из `scripts/lib/entry.js` | Проверку запустили через ссылку или на старом Node, она молча пропустила себя и вернула успех | 4 |
-| `the-push-barrier-guards-the-declared-release-branch` | Пуш в ветку выпуска без объявленного выпуска отклоняется | Ветку выпуска сдвинули случайным пушем | 2 |
-| `the-commit-identity-has-one-source` | Автор коммитов задан в одном месте | В истории два разных автора, и никто этого не замечает | 1 |
-| `a-staged-secret-is-reported-without-its-value` | Коммит проверяют на секреты до показа содержимого | Ключ уже на экране и в журнале сессии, когда его нашли | 1 |
-| `every-guard-states-its-rule` | Имя сторожа это фраза, шапка объясняет, зачем он, а эта таблица совпадает со сторожами и их поломками | Агент видит красный тест без объяснения и чинит тест; правило нельзя найти, не открыв тест | 4 |
-| `every-planted-violation-is-caught` | Каждая намеренная поломка роняет своего сторожа | Сторож, который не умеет падать, выглядит как защита | — |
-| `a-published-provider-fix-reaches-a-user-within-an-hour` | Пример: исправленная настройка провайдера доходит до пользователя не дольше часа | Интервал увеличили, обычные тесты этого не видят | 2 |
-| `no-reminder-leaves-before-the-intent-is-recorded` | Пример: напоминание уходит только после записи о нём | После перезапуска то же напоминание уходит второй раз | 1 |
-| `no-provider-name-outlives-the-provider-config` | Пример: имя провайдера записано только в его конфигурации | Описание поведения сервиса устарело, а агенты продолжают ему верить | 1 |
+| `both-front-ends-share-one-instruction-file` | Both agents have one instruction file and no shadow files | A rule was fixed in one copy, the other agent works by the old one | 2 |
+| `both-front-ends-apply-the-same-settings` | Deny rules, the browser and auto-memory mean the same for both agents | One agent may do what the other is forbidden to do | 3 |
+| `both-front-ends-offer-the-same-workflows` | The skills of the two agents match byte for byte | A commit or release step exists for one agent only | 1 |
+| `a-spec-reference-points-at-the-source-of-truth` | Every path in the instructions, skills and specifications exists | The agent follows a link into nothing and makes the rest up | 1 |
+| `the-index-matches-the-specs` | The index in `docs/llm_context/` is built from the current specifications | The agent reads the wrong lines and is sure it read the right ones | 1 |
+| `the-build-keeps-every-gate` | No build step is dropped or replaced with a no-op | The build became faster and green because it stopped checking | 3 |
+| `console-access-single-sink` | Logs are written only through one module | Logs cannot be turned on and filtered in one place | 3 |
+| `every-transition-log-matches-the-process-model` | Log tags match the transitions of the process model | A broken run cannot be read from its log | 4 |
+| `every-regression-scenario-resolves-to-a-fixture-and-a-rule` | Every scenario of the run points at an existing page and transition | The agent goes through a mandatory scenario however it can | 1 |
+| `verify-refuses-a-tree-with-uncommitted-work` | `npm run verify` fails on any uncommitted work, a new file included | A release shipped without a file someone forgot to add, and verify was green | 1 |
+| `a-check-started-through-a-link-still-runs` | A command started through a linked folder ends the same way as when started directly; the start flag is read only through `isMain` from `scripts/lib/entry.js` | A check was started through a link or on an old Node, silently skipped itself and reported success | 4 |
+| `the-repository-text-stays-in-english` | No authored text file holds a letter of a script other than Latin; the owner's work orders are exempt | Half the rules are in a language part of the readers cannot read, and nobody notices which half | 2 |
+| `the-push-barrier-guards-the-declared-release-branch` | A push to the release branch without a declared release is refused | The release branch was moved by an accidental push | 2 |
+| `the-commit-identity-has-one-source` | The commit author is set in one place | The history has two different authors, and nobody notices | 1 |
+| `a-staged-secret-is-reported-without-its-value` | A commit is scanned for secrets before its content is shown | The key is already on the screen and in the session log when it is found | 1 |
+| `every-guard-states-its-rule` | A guard's name is a sentence, its header explains why it exists, and this table matches the guards and their plants | The agent sees a red test with no explanation and fixes the test; the rule cannot be found without opening the test | 4 |
+| `every-planted-violation-is-caught` | Every planted violation fails its guard | A guard that cannot fail looks like protection | — |
+| `a-published-provider-fix-reaches-a-user-within-an-hour` | Example: a fixed provider setting reaches the user within an hour | The interval was raised, ordinary tests do not see it | 2 |
+| `no-reminder-leaves-before-the-intent-is-recorded` | Example: a reminder leaves only after it is recorded | After a restart the same reminder leaves a second time | 1 |
+| `no-provider-name-outlives-the-provider-config` | Example: the provider's name is written only in its configuration | A description of the service's behavior went stale, and agents keep trusting it | 1 |
 
-Таблицу сверяет сторож `every-guard-states-its-rule`: у каждого сторожа есть строка, у каждой строки есть сторож, и число поломок совпадает с `scripts/lib/plants.js`. Все поломки по очереди показывает `npm run demo:guards`.
+The table is checked by the guard `every-guard-states-its-rule`: every guard has a row, every row has a guard, and the count of plants matches `scripts/lib/plants.js`. `npm run demo:guards` shows every plant in turn.
 
-## Когда появляется сторож
+## When a guard appears
 
-- Правило было нарушено, и ничто этого не поймало.
-- Продукт сформулировал новое правило, нарушение которого не видно снаружи.
-- Обычный тест не может поймать нарушение по своей природе: например, ошибка проявляется только в гонке.
+- A rule was broken, and nothing caught it.
+- The product stated a new rule whose violation is not visible from outside.
+- An ordinary test cannot catch the violation by its nature: for example, the error shows only in a race.
 
-Правило, которое ломается громко, сторожа не требует: хватит обычного теста.
+A rule that breaks loudly needs no guard: an ordinary test is enough.
 
-## Как устроен
+## How a guard is built
 
-1. **Имя это правило.** Файл читается как предложение: `no-reminder-leaves-before-the-intent-is-recorded`. Падение теста само говорит, что нарушено.
-2. **Шапка говорит, что сломается без него.** Агент, увидев красный тест без объяснения, склонен чинить тест. С объяснением он чинит изменение.
-3. **Значения читаются из источника.** Сторож берёт имя ветки из `harness.config.json`, а имена сервисов из их конфига, иначе сам становится ещё одной копией.
-4. **Обход, не нашедший файлов, падает.** Проверка, которая ничего не прочитала, ничего и не найдёт, а это выглядит как чистый результат. Поэтому у каждого обхода есть нижняя граница прочитанного: `assertFloor` из `scripts/lib/scan.js` падает, если прочитано меньше.
-5. **Сторож падает, когда пропала форма.** Если строка, которую он ищет, исчезла, это ошибка, а не «нарушений нет».
-6. **Сборка и сторож вызывают одну функцию.** Своя копия обхода позволит им требовать разного, оставаясь зелёными.
-7. **Нарушение посажено.** Запись в `scripts/lib/plants.js` ломает правило в копии репозитория. Сторож обязан пройти до поломки и упасть после неё. Сторож, который не может упасть, хуже его отсутствия: он читается как защита.
+1. **The name is the rule.** The file reads as a sentence: `no-reminder-leaves-before-the-intent-is-recorded`. A failing test says by itself what is broken.
+2. **The header says what breaks without it.** An agent that sees a red test with no explanation tends to fix the test. With an explanation it fixes the change.
+3. **Values are read from their source.** A guard takes the branch name from `harness.config.json` and the service names from their config, or it becomes one more copy itself.
+4. **A walk that found no files fails.** A check that read nothing finds nothing, and that looks like a clean result. So every walk has a floor of what it must read: `assertFloor` from `scripts/lib/scan.js` fails when less was read.
+5. **A guard fails when the shape it reads is gone.** If the line it looks for disappeared, that is an error, not "no violations".
+6. **The build and the guard call one function.** Their own copies of a walk would let them demand different things while both stay green.
+7. **The violation is planted.** An entry in `scripts/lib/plants.js` breaks the rule in a copy of the repository. The guard must pass before the break and fail after it. A guard that cannot fail is worse than none: it reads as protection.
 
-## Пять приёмов
+## Five techniques
 
-| Приём | Когда нужен | Пример |
+| Technique | When it is needed | Example |
 | --- | --- | --- |
-| Сравнение двойников | Одно и то же лежит в двух местах | `tests/guards/both-front-ends-offer-the-same-workflows.test.js` |
-| Запуск вместо чтения | Важно поведение, а не текст | `tests/guards/the-push-barrier-guards-the-declared-release-branch.test.js` |
-| Неравенство на константе | Обычные тесты читают константу и поэтому её не ограничивают | `example/tests/guards/a-published-provider-fix-reaches-a-user-within-an-hour.test.js` |
-| Свидетель в подставке | Нарушение видно только при сбое между двумя шагами, а итог прогона без сбоя тот же | `example/tests/guards/no-reminder-leaves-before-the-intent-is-recorded.test.js` |
-| Таблица как интерфейс | Документ читает машина | `tests/guards/every-regression-scenario-resolves-to-a-fixture-and-a-rule.test.js` |
+| Comparing twins | The same thing lives in two places | `tests/guards/both-front-ends-offer-the-same-workflows.test.js` |
+| Running instead of reading | Behavior matters, not text | `tests/guards/the-push-barrier-guards-the-declared-release-branch.test.js` |
+| An inequality on a constant | Ordinary tests read the constant and therefore do not bound it | `example/tests/guards/a-published-provider-fix-reaches-a-user-within-an-hour.test.js` |
+| A witness in a stand-in | The violation shows only on a failure between two steps, and a run without a failure ends the same | `example/tests/guards/no-reminder-leaves-before-the-intent-is-recorded.test.js` |
+| A table as an interface | A document is read by a machine | `tests/guards/every-regression-scenario-resolves-to-a-fixture-and-a-rule.test.js` |
 
-Свидетель — подставной соучастник, который в нужный момент смотрит на состояние: транспорт в момент отправки проверяет, что намерение уже записано. Проще сравнить место двух строк в исходнике, но такая проверка падает на безобидной перестановке и не видит запись, которую начали и не дождались. Свидетель проверяет само обещание.
+A witness is a stand-in accomplice that looks at the state at the right moment: the transport checks, at the moment of sending, that the intent is already recorded. Comparing the positions of two lines in the source is simpler, but such a check fails on a harmless reordering and misses a record that was started and not awaited. The witness checks the promise itself.
 
-## Как менять
+## How to change
 
-Если сторож отказывает изменению, значит, неверно либо изменение, либо правило. Смена правила это решение продукта, и агент задаёт этот вопрос на языке поведения. Ослаблять сторожа, сборку или хук, чтобы изменение прошло, запрещено (`AGENTS.md`, HARD PROHIBITIONS).
+If a guard refuses a change, either the change or the rule is wrong. Changing a rule is the product's decision, and the agent asks it in the language of behavior. Weakening a guard, the build or a hook to let a change through is forbidden (`AGENTS.md`, HARD PROHIBITIONS).
 
-Новый сторож добавляется в таблицу выше в том же изменении.
+A new guard is added to the table above in the same change.

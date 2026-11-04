@@ -10,7 +10,7 @@ const SKIPPED_DIRECTORIES = new Set(['node_modules', '.git']);
  * Lists files under the given directories.
  * @param {string} root Repository root.
  * @param {string[]} directories Directories relative to the root.
- * @param {string[]} extensions Extensions to keep, with the dot.
+ * @param {string[]} [extensions] Extensions to keep, with the dot; without it every file is kept.
  * @returns {string[]} Sorted paths relative to the root, with forward slashes.
  */
 export function walkFiles(root, directories, extensions) {
@@ -20,7 +20,7 @@ export function walkFiles(root, directories, extensions) {
       if (SKIPPED_DIRECTORIES.has(entry)) continue;
       const path = join(absolute, entry);
       if (statSync(path).isDirectory()) visit(path);
-      else if (extensions.includes(extname(entry))) found.push(relative(root, path).split(sep).join('/'));
+      else if (!extensions || extensions.includes(extname(entry))) found.push(relative(root, path).split(sep).join('/'));
     }
   };
   for (const directory of directories) {

@@ -1,73 +1,73 @@
-# Два агента, один проект
+# Two agents, one project
 
-Проект ведут два агента: Claude Code и Codex. Что получает владелец продукта, не должно зависеть от того, какой из них сейчас открыт.
+The project is run by two agents: Claude Code and Codex. What the product owner gets must not depend on which of them is open right now.
 
-## Один файл инструкций
+## One instruction file
 
-Оба агента читают `AGENTS.md`. Claude Code читает его, когда рядом нет файла его собственного формата. Проверять это нужно на своей версии: команда `/memory` показывает, какие файлы загружены.
+Both agents read `AGENTS.md`. Claude Code reads it when there is no file of its own format next to it. Check this on your version: the `/memory` command shows which files are loaded.
 
-Копия инструкций под другим именем не добавляет ни одного правила. Каждое изменение приходится вносить дважды, а забытая половина никак себя не проявляет.
+A copy of the instructions under another name adds no rule. Every change has to be made twice, and the forgotten half shows no sign of itself.
 
-## Файлы-тени
+## Shadow files
 
-Эти файлы агент читает вместо общего или поверх него, и ничего об этом не сообщает:
+The agent reads these files instead of the shared one or on top of it, and reports nothing about it:
 
-| Файл | Почему опасен |
+| File | Why it is dangerous |
 | --- | --- |
-| `CLAUDE.md` в корне или в `.claude/`, `AGENTS.md` в `.claude/` | Появляется файл собственного формата, общий перестаёт быть единственным |
-| `CLAUDE.local.md` | Обычно в `.gitignore`, поэтому его видно только на диске |
-| `AGENTS.override.md` | Подменяет общий файл для второго агента |
-| Вложенные `AGENTS.md`, `CLAUDE.md` | Срабатывают только в своей папке |
-| `project_doc_fallback_filenames` в `.codex/config.toml` | Объявляет ещё одно имя, поэтому список обязан быть пустым |
+| `CLAUDE.md` at the root or in `.claude/`, `AGENTS.md` in `.claude/` | A file of the agent's own format appears, and the shared one stops being the only one |
+| `CLAUDE.local.md` | Usually in `.gitignore`, so it is visible only on disk |
+| `AGENTS.override.md` | Replaces the shared file for the second agent |
+| Nested `AGENTS.md`, `CLAUDE.md` | Apply only in their own folder |
+| `project_doc_fallback_filenames` in `.codex/config.toml` | Declares one more name, so the list must be empty |
 
-Сторож: `tests/guards/both-front-ends-share-one-instruction-file.test.js`.
+Guard: `tests/guards/both-front-ends-share-one-instruction-file.test.js`.
 
-## Скиллы парами
+## Skills in pairs
 
-Скилл — файл `SKILL.md` с инструкцией на одно повторяемое действие: коммит, пуш, выпуск. Каждый скилл лежит дважды: `.claude/skills/<name>/SKILL.md` и `.agents/skills/<name>/SKILL.md`. Тексты совпадают байт в байт, кроме поля запуска. Скилл, который меняет историю или ветки, убирает незакоммиченную работу или пишет за пределы машины (коммит, пуш, выпуск, откат, продолжение работы с другой машины), агент сам не запускает, только по имени от владельца. Этот запрет объявлен у обеих копий: `disable-model-invocation: true` в первой, `allow_implicit_invocation: false` в `agents/openai.yaml` во второй. `code-task-workflow` пишет в рабочую папку и во временные копии репозитория для тестов, которые тесты сами удаляют. Агент запускает его сам на каждой задаче с кодом.
+A skill is a `SKILL.md` file with instructions for one repeated action: a commit, a push, a release. Every skill lives twice: `.claude/skills/<name>/SKILL.md` and `.agents/skills/<name>/SKILL.md`. The texts match byte for byte, except for the invocation field. A skill that changes history or branches, removes uncommitted work or writes outside the machine (commit, push, release, rollback, resuming work from another machine) is not started by the agent on its own, only when the owner names it. Both copies declare this ban: `disable-model-invocation: true` in the first, `allow_implicit_invocation: false` in `agents/openai.yaml` in the second. `code-task-workflow` writes to the working folder and to temporary copies of the repository for tests, which the tests remove themselves. The agent starts it on its own for every code task.
 
-Сторож: `tests/guards/both-front-ends-offer-the-same-workflows.test.js`.
+Guard: `tests/guards/both-front-ends-offer-the-same-workflows.test.js`.
 
-## Настройки
+## Settings
 
-| Что | Первый агент | Второй агент |
+| What | First agent | Second agent |
 | --- | --- | --- |
-| Запреты команд | `.claude/settings.json`, `permissions.deny` | `.codex/rules/project.rules` |
-| Инструмент браузера | `.mcp.json` | `.codex/config.toml` |
-| Усилие | `effortLevel` | `model_reasoning_effort` |
-| Автопамять | `autoMemoryEnabled: false` | `[features] memories = false` |
+| Command deny rules | `.claude/settings.json`, `permissions.deny` | `.codex/rules/project.rules` |
+| Browser tool | `.mcp.json` | `.codex/config.toml` |
+| Effort | `effortLevel` | `model_reasoning_effort` |
+| Auto-memory | `autoMemoryEnabled: false` | `[features] memories = false` |
 
-Автопамять выключена, потому что заметка, которую агент сохранил себе сам, становится вторым источником правил. Правило живёт в репозитории, где его видят оба агента и проверяют сторожа.
+Auto-memory is off because a note the agent saved for itself becomes a second source of rules. A rule lives in the repository, where both agents see it and the guards check it.
 
-Верхнеуровневые ключи TOML стоят выше первой таблицы. Ключ, случайно попавший внутрь таблицы, остаётся валидным и ничего не настраивает.
+Top-level TOML keys stand above the first table. A key that slipped inside a table stays valid and configures nothing.
 
-Сторож: `tests/guards/both-front-ends-apply-the-same-settings.test.js`.
+Guard: `tests/guards/both-front-ends-apply-the-same-settings.test.js`.
 
-## Права: осознанный риск
+## Permissions: a deliberate risk
 
-Шаблон рассчитан на режим, где владелец выдаёт наряд и уходит, агент работает часами и останавливается только на продуктовых вопросах. Поэтому команды идут без песочницы и без запросов разрешения.
+The template is built for a mode where the owner hands over a work order and walks away, and the agent works for hours and stops only on product questions. So commands run without a sandbox and without permission prompts.
 
-Защита в этом режиме держится на трёх вещах: общем списке запретов, правилах `AGENTS.md` и истории git. Список запретов ловит случайную команду, а не решение агента: он узнаёт команду по началу строки, поэтому та же операция в другой записи или внутри скрипта проходит. Это не песочница. Чтение файлов в списке не запрещено: агент, которому разрешена командная строка, прочтёт файл и без инструмента чтения. Секреты в папке проекта не хранятся. Запускайте агента в отдельной среде, где нет чужих данных и секретов, которые нельзя потерять.
+In this mode protection rests on three things: the shared deny list, the rules of `AGENTS.md` and the git history. The deny list catches an accidental command, not an agent's decision: it recognizes a command by the start of the line, so the same operation written another way or inside a script passes. This is not a sandbox. Reading files is not denied: an agent allowed a command line will read a file without the read tool. Secrets are not kept in the project folder. Run the agent in a separate environment, with no one else's data and no secrets you cannot afford to lose.
 
-Режим обхода разрешений у Claude Code настраивается на рабочей станции, а не в репозитории: так проект не навязывает его тому, кто просто склонировал код.
+Claude Code's permission-bypass mode is set on the workstation, not in the repository: so the project does not impose it on someone who just cloned the code.
 
-## Наряд под целью
+## A work order under a goal
 
-Владелец запускает наряд командой `/goal <условие>`. Агент работает, пока условие не выполнено, и не останавливается на полпути. Поставить цель может только владелец, агент её себе не ставит.
+The owner starts a work order with the command `/goal <condition>`. The agent works until the condition is met and does not stop halfway. Only the owner can set a goal; the agent does not set one for itself.
 
-Кто решает, что условие выполнено, у агентов разное:
+Who decides that the condition is met differs between the agents:
 
 | | Claude Code | Codex |
 | --- | --- | --- |
-| Кто признаёт цель выполненной | Отдельная модель после каждого хода судит по разговору. Команд она не запускает и файлов не читает | Текст цели одновременно первый запрос и критерии завершения. Сверяет с ними сам агент |
-| Управление | `/goal` показывает цель, `/goal clear` снимает её | `/goal`, `/goal edit`, `/goal pause`, `/goal resume`, `/goal clear` |
+| Who declares the goal met | A separate model judges by the conversation after every turn. It runs no commands and reads no files | The goal text is both the first request and the completion criteria. The agent itself checks against them |
+| Control | `/goal` shows the goal, `/goal clear` removes it | `/goal`, `/goal edit`, `/goal pause`, `/goal resume`, `/goal clear` |
 
-Сверено с документацией Claude Code 2.1.289 и Codex 0.160.0. В Claude Code команда недоступна, если включён `disableAllHooks`.
+Checked against the documentation of Claude Code 2.1.289 and Codex 0.160.0. In Claude Code the command is unavailable when `disableAllHooks` is on.
 
-Правила условия:
+Rules of the condition:
 
-- **Подтверждение печатается в разговор.** Судья Claude Code видит только разговор, поэтому условие требует вывести раздел отчёта и итог проверок, а не сказать, что они есть.
-- **У условия три выхода через «либо»:** измеримый конец, остановка на вопросе к владельцу, предел ходов. Предел записан вариантом условия, а не отдельной командой: иначе судья может принять его за указание агенту. Цель выполнена только при первом выходе. Вопрос и предел ходов останавливают работу, но не завершают её, поэтому последним сообщением агент называет выход и перечисляет, что не сделано.
-- **Текст цели не длиннее 4000 символов.** Подробности лежат в файле наряда, на который цель ссылается (`docs/work-orders/README.md`).
+- **The confirmation is printed into the conversation.** The Claude Code judge sees only the conversation, so the condition requires printing the report section and the result of the checks, not saying that they exist.
+- **The condition has three exits joined by "or":** a measurable end, a stop on a question to the owner, a turn limit. The limit is written as a branch of the condition, not as a separate command: otherwise the judge may take it for an instruction to the agent. The goal is met only by the first exit. A question and the turn limit stop the work but do not finish it, so in its last message the agent names the exit and lists what is not done.
+- **The goal text is at most 4000 characters.** The details live in the work order file the goal points at (`docs/work-orders/README.md`).
 
-Строка запуска: `docs/WORK-ORDER-TEMPLATE.md`. Цель не заменяет независимое ревью: в Codex выполнение условия проверяет тот же агент, который работал.
+The launch line: `docs/WORK-ORDER-TEMPLATE.md`. A goal does not replace independent review: in Codex the condition is checked by the same agent that did the work.

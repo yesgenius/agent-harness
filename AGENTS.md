@@ -31,6 +31,11 @@ One module = one job. If you need "and" to describe what a file does, split it. 
 
 All functions, classes and modules carry a doc comment in English, in the standard format of their language (JSDoc for JavaScript).
 
+### Language
+
+- Everything written into this repository — code, comments, documents, specifications — is in English. The one exception is a work order in `docs/work-orders/`: it stays in the language the owner wrote it in. A letter of a script other than Latin fails the tests (`the-repository-text-stays-in-english`); another language written in Latin letters passes them, and review catches it.
+- Talk to the user in the language the user writes in: questions, reports and the manual check. Quote file names, commands, section titles and log tags exactly as the repository spells them.
+
 ### Project-Specific
 
 <!-- Rules for agents that only this project has: storage, log sink, process models. What the product does, for whom, and what it promises is described in docs/specs/, never here. -->

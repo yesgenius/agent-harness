@@ -1,39 +1,39 @@
-# Продукт примера: напоминание
+# The example's product: a reminder
 
-Описание продукта из `example/`. Пример выдуман, но это настоящая спецификация его кода. Она отвечает на пять вопросов первого шага переноса из `docs/SKELETON.md`. Описание своего продукта получится такого же вида.
+The description of the product in `example/`. The example is made up, but this is a real specification of its code. It answers the five questions of the first step of moving the harness, from `docs/SKELETON.md`. The description of your own product will look like this.
 
-## Что делает и для кого
+## What it does and for whom
 
-Пользователь пишет текст напоминания и нажимает Send. Продукт отправляет напоминание через внешнего провайдера и показывает только то, что доказано:
+The user writes the text of a reminder and presses Send. The product sends the reminder through an external provider and shows only what is proven:
 
-| Статус | Когда |
+| Status | When |
 | --- | --- |
-| `confirmed` | Текст появился в ленте доставки провайдера |
-| `unconfirmed` | Провайдер принял напоминание, но доставку не удалось доказать за отведённое время (`PROOF_TIMEOUT_MS` в `example/src/constants.js`) |
-| `failed` | Провайдер отказал или не найден в конфигурации |
-| `duplicate-blocked` | Намерение отправить это напоминание уже записано. Возможно, оно уже ушло, поэтому второй раз не уходит |
+| `confirmed` | The text appeared in the provider's delivery feed |
+| `unconfirmed` | The provider accepted the reminder, but delivery could not be proven within the allotted time (`PROOF_TIMEOUT_MS` in `example/src/constants.js`) |
+| `failed` | The provider refused or is not found in the configuration |
+| `duplicate-blocked` | The intent to send this reminder is already recorded. It may already have left, so it does not leave a second time |
 
-Успех без доказательства не показывается: принятое провайдером напоминание ещё не доставлено.
+Success without proof is not shown: a reminder the provider accepted is not yet delivered.
 
-## Что нельзя отменить
+## What cannot be undone
 
-Отправку. Ушедшее напоминание отозвать нельзя, поэтому до отправки продукт записывает намерение. Если запись уже есть, напоминание второй раз не уходит. Чтобы это защищало и от перезапуска между записью и отправкой, журнал должен хранить запись там, где она переживёт перезапуск. Такого хранилища в примере нет: журнал — это зависимость, которую передают в `example/src/dispatch.js`. На страницах-образцах журнал живёт в памяти страницы, а перезапуск изображён записью, сделанной заранее (`restarted.html`). Так проверяется реакция на уже записанное намерение, а не сохранность записи. Порядок шагов и их метки в логах заданы схемой процесса: `docs/specs/PROCESS-REMINDER.md`.
+The send. A reminder that left cannot be recalled, so before the send the product records the intent. If a record already exists, the reminder does not leave a second time. For this to protect against a restart between the record and the send as well, the journal must keep the record where it survives a restart. The example has no such storage: the journal is a dependency passed into `example/src/dispatch.js`. On the fixture pages the journal lives in the page's memory, and a restart is represented by a record made in advance (`restarted.html`). This checks the reaction to an intent already recorded, not that the record survives. The order of the steps and their log tags are set by the process model: `docs/specs/PROCESS-REMINDER.md`.
 
-## На какие внешние сервисы опирается
+## Which external services it relies on
 
-На одного провайдера. Его имя и адрес записаны только в `example/config/providers.json`. В коде, тестах и спецификациях имени провайдера нет: сервис меняет поведение без предупреждения, и описание с его именем устареет молча.
+One provider. Its name and address are written only in `example/config/providers.json`. Code, tests and specifications do not contain the provider's name: a service changes its behavior without warning, and a description that names it goes stale silently.
 
-## Что нельзя менять без владельца
+## What must not change without the owner
 
-| Обещание | Что его держит |
+| Promise | What holds it |
 | --- | --- |
-| Запись намерения стоит раньше отправки | Сторож `no-reminder-leaves-before-the-intent-is-recorded` |
-| Успех показывается только после доказательства доставки | Обычный тест в `example/tests/dispatch.test.js`. Его нарушение роняет этот тест, поэтому отдельный сторож не нужен |
-| Исправленная конфигурация провайдера доходит до пользователя не дольше чем за час | Сторож `a-published-provider-fix-reaches-a-user-within-an-hour` держит то, что от обещания есть в коде: период перечитывания не больше часа и решение «пора перечитать». Программы, которая перечитывает, в примере нет (последний раздел) |
-| Имя провайдера живёт только в его конфигурации | Сторож `no-provider-name-outlives-the-provider-config`: он ищет имя и идентификатор провайдера |
+| The intent is recorded before the send | Guard `no-reminder-leaves-before-the-intent-is-recorded` |
+| Success is shown only after delivery is proven | An ordinary test in `example/tests/dispatch.test.js`. Breaking the promise fails that test, so no separate guard is needed |
+| A fixed provider configuration reaches the user within an hour | Guard `a-published-provider-fix-reaches-a-user-within-an-hour` holds the part of the promise that is in the code: a refresh period of at most an hour and the "time to refresh" decision. The example has no program that refreshes (last section) |
+| The provider's name lives only in its configuration | Guard `no-provider-name-outlives-the-provider-config`: it looks for the provider's name and identifier |
 
-Правила сторожей перечислены в `docs/specs/GUARDS.md`.
+The guards' rules are listed in `docs/specs/GUARDS.md`.
 
-## Как новая версия доходит до пользователей
+## How a new version reaches users
 
-Никак: пример выпускается только в составе шаблона, своих пользователей у него нет. В коде есть только решение, когда пора перечитать конфигурацию провайдера (`example/src/provider-config.js`). Программы, которая её перечитывает, в примере нет.
+It does not: the example is released only as part of the template and has no users of its own. The code holds only the decision of when it is time to refresh the provider configuration (`example/src/provider-config.js`). The example has no program that refreshes it.

@@ -6,10 +6,10 @@ Find the specification here, its section in the index, and read only that sectio
 
 | Specification | Index | Title |
 | --- | --- | --- |
-| `docs/specs/AGENT-FRONT-ENDS.md` | `docs/llm_context/index_AGENT-FRONT-ENDS.md` | Два агента, один проект |
-| `docs/specs/BROWSER-LANE.md` | `docs/llm_context/index_BROWSER-LANE.md` | Браузерная полоса |
-| `docs/specs/GUARDS.md` | `docs/llm_context/index_GUARDS.md` | Сторожа |
-| `docs/specs/PROCESS-REMINDER.md` | `docs/llm_context/index_PROCESS-REMINDER.md` | Процесс: отправка напоминания |
-| `docs/specs/PRODUCT-REMINDER.md` | `docs/llm_context/index_PRODUCT-REMINDER.md` | Продукт примера: напоминание |
-| `docs/specs/REGRESSION.md` | `docs/llm_context/index_REGRESSION.md` | Прогон по образцам |
-| `docs/specs/RELEASE.md` | `docs/llm_context/index_RELEASE.md` | Контракт выпуска |
+| `docs/specs/AGENT-FRONT-ENDS.md` | `docs/llm_context/index_AGENT-FRONT-ENDS.md` | Two agents, one project |
+| `docs/specs/BROWSER-LANE.md` | `docs/llm_context/index_BROWSER-LANE.md` | Browser lane |
+| `docs/specs/GUARDS.md` | `docs/llm_context/index_GUARDS.md` | Guards |
+| `docs/specs/PROCESS-REMINDER.md` | `docs/llm_context/index_PROCESS-REMINDER.md` | Process: sending a reminder |
+| `docs/specs/PRODUCT-REMINDER.md` | `docs/llm_context/index_PRODUCT-REMINDER.md` | The example's product: a reminder |
+| `docs/specs/REGRESSION.md` | `docs/llm_context/index_REGRESSION.md` | Regression run on fixtures |
+| `docs/specs/RELEASE.md` | `docs/llm_context/index_RELEASE.md` | Release contract |

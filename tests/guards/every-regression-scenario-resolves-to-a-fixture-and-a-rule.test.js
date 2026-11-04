@@ -15,7 +15,7 @@ import { loadModels } from '../../scripts/fsm/model.js';
 import { loadConfig } from '../../scripts/lib/config.js';
 import { assertFloor, walkFiles } from '../../scripts/lib/scan.js';
 
-const HEADER = '| Сценарий | Состав прогона | Что делает прогон | Норма (владелец ответа) |';
+const HEADER = '| Scenario | Fixture | What the run does | Norm (owner of the answer) |';
 const ROW = /^\|.*\|$/;
 const SEPARATOR = /^\|[\s-|]+\|$/;
 const BACKTICKED = /`([^`]+)`/g;

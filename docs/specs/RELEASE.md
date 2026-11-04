@@ -1,31 +1,31 @@
-# Контракт выпуска
+# Release contract
 
-Как новая версия этого шаблона доходит до тех, кто его берёт. Скилл `release` выполняет этот порядок и останавливается там, где здесь нужно слово владельца.
+How a new version of this template reaches the people who take it. The `release` skill runs this sequence and stops where the owner's word is needed.
 
-## Что получает пользователь
+## What the user gets
 
-Пользователь клонирует репозиторий с GitHub и получает ветку выпуска: она там ветка по умолчанию. Отдельного пакета нет: выпущенная версия это коммит, на который указывает ветка выпуска на GitHub. Поэтому публикация шаблона это пуш ветки выпуска.
+The user clones the repository from GitHub and gets the release branch: it is the default branch there. There is no separate package: the released version is the commit the release branch on GitHub points at. So publishing the template is pushing the release branch.
 
-Пример из `example/` выпускается только в составе шаблона. Своих пользователей у него нет.
+The example in `example/` is released only as part of the template. It has no users of its own.
 
-## Ветки
+## Branches
 
-- Ветка разработки: `developmentBranch` из `harness.config.json`. Ежедневная работа идёт здесь, и её пушит скилл `push`.
-- Ветка выпуска: `releaseBranch` оттуда же. Отвечает на вопрос, что сейчас получает тот, кто клонирует шаблон. Двигается только перемоткой вперёд из ветки разработки и только с объявленным намерением `RELEASE_INTENT=1`.
+- Development branch: `developmentBranch` from `harness.config.json`. Daily work happens here, and the `push` skill pushes it.
+- Release branch: `releaseBranch` from the same file. It answers the question of what someone who clones the template gets right now. It moves only by fast-forward from the development branch and only with the declared intent `RELEASE_INTENT=1`.
 
-Без объявленного намерения хук `.githooks/pre-commit` отклоняет `git commit` на ветке выпуска, а `.githooks/pre-push` — пуш в неё. Коммит, который создают слияние, `cherry-pick` или `revert`, первый хук не видит: такую ошибку останавливает пуш. Хуки стоят против ошибки, а не против решения: `--no-verify` их обходит. Защита ветки на GitHub в этот контракт не входит.
+Without the declared intent, the hook `.githooks/pre-commit` refuses a `git commit` on the release branch, and `.githooks/pre-push` refuses a push to it. A commit created by a merge, a `cherry-pick` or a `revert` is not seen by the first hook: the push stops such a mistake. The hooks stand against a mistake, not against a decision: `--no-verify` bypasses them. Branch protection on GitHub is not part of this contract.
 
-## Порядок
+## Sequence
 
-1. На ветке разработки поле `version` в `package.json` поднято для нового выпуска, и эта правка закоммичена процедурой `commit`. Её запускает владелец, назвав по имени.
-2. `npm run verify` зелёный. Он заканчивается проверкой `scripts/check-clean-tree.js`: всё отличие от последнего коммита, включая новый файл, который забыли добавить, роняет его и называется по пути. Прогон по образцам из `docs/specs/REGRESSION.md` пройден.
-3. Отчёт владельцу на языке поведения: что изменилось для того, кто возьмёт шаблон, и что показал прогон. До слова владельца ничего наружу не уходит.
-4. После слова владельца: перемотка ветки выпуска до ветки разработки и её пуш с `RELEASE_INTENT=1`. Этот пуш и есть публикация. Слово владельца даётся на этот выпуск, а не на выпуски вообще.
-5. Полный хеш выпущенного коммита записывается в отчёт.
-6. Владелец открывает репозиторий на GitHub и подтверждает, что ветка выпуска указывает на этот коммит.
-7. После подтверждения на этот коммит ставится тег `v` плюс `version` из `package.json`, например `v1.0.0`, и пушится.
-8. Рабочая копия возвращается на ветку разработки.
+1. On the development branch the `version` field in `package.json` is raised for the new release, and the edit is committed by the `commit` procedure. The owner starts it by naming it.
+2. `npm run verify` is green. It ends with the check `scripts/check-clean-tree.js`: any difference from the last commit, a new file someone forgot to add included, fails it and is named by its path. The run on the fixtures from `docs/specs/REGRESSION.md` has passed.
+3. A report to the owner in the language of behavior: what changed for someone who takes the template, and what the run showed. Nothing leaves the machine before the owner's word.
+4. After the owner's word: the release branch is fast-forwarded to the development branch and pushed with `RELEASE_INTENT=1`. That push is the publication. The owner's word is given for this release, not for releases in general.
+5. The full hash of the released commit is written into the report.
+6. The owner opens the repository on GitHub and confirms that the release branch points at that commit.
+7. After the confirmation that commit gets the tag `v` plus `version` from `package.json`, for example `v1.0.0`, and the tag is pushed.
+8. The working copy returns to the development branch.
 
-## Откат
+## Rollback
 
-История ветки выпуска не переписывается. Принудительный пуш это разрушительная операция git: без подтверждения владельца агент её не выполняет (`AGENTS.md`, раздел Autonomy and approval). Настройки обоих агентов вдобавок отклоняют команду, которая начинается с `git push --force` или `git push -f`; другие формы того же пуша они не узнают. Если выпуск оказался сломан, исправление делается обычной задачей на ветке разработки и выходит новым выпуском по тому же порядку. Если исправить быстро нельзя, на ветке разработки делается `git revert` сломавших коммитов, и это тоже выходит новым выпуском.
+The history of the release branch is not rewritten. A force push is a destructive git operation: without the owner's confirmation the agent does not perform it (`AGENTS.md`, section Autonomy and approval). The settings of both agents also refuse a command that starts with `git push --force` or `git push -f`; other spellings of the same push they do not recognize. If a release turns out broken, the fix is an ordinary task on the development branch and ships as a new release by the same sequence. If it cannot be fixed quickly, the breaking commits are reverted with `git revert` on the development branch, and that too ships as a new release.

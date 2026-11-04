@@ -1,247 +1,248 @@
-# Скелет обвязки
+# The harness skeleton
 
-Этот документ для того, кто ведёт продукт, но код не читает: продакта, менеджера, основателя. Разработчику он тоже пригодится, но писался не для него.
+This document is for someone who runs a product but does not read code: a product manager, a manager, a founder. A developer will find it useful too, but it was not written for one.
 
-**Обвязка** это всё, что окружает ИИ-агента в проекте: файл правил, автоматические проверки, запреты и готовые процедуры. Она нужна, чтобы вы могли верить слову агента «готово», не читая, что он поменял в коде.
+The **harness** is everything that surrounds an AI agent in a project: the rules file, automatic checks, deny rules and ready-made procedures. It exists so you can trust the agent's "done" without reading what it changed in the code.
 
-Работает это так. Правила, которые можно проверить автоматически, проверяет машина: если агент нарушил правило, сборка или тесты падают, и агент обязан исправить работу. Вы принимаете то, что видит пользователь. Несколько правил машина проверить не может, они держатся только на тексте инструкции. Они перечислены ниже, чтобы вы знали, где нужна ваша бдительность.
+It works like this. Rules that can be checked automatically are checked by a machine: if the agent broke a rule, the build or the tests fail, and the agent has to fix its work. You accept what the user sees. A few rules a machine cannot check; they rest only on the text of the instructions. They are listed below, so you know where your attention is needed.
 
-## Слова, которые понадобятся
+## Words you will need
 
-| Слово | Что значит |
+| Word | What it means |
 | --- | --- |
-| Сборка | Команда `npm run build`: быстрые проверки кода и документов и генерация документов. Сторожа, тесты и намеренные поломки в неё не входят |
-| Полная проверка | `npm run build`, затем `npm test`. Зелёная — всё в порядке, упала — что-то нарушено. `npm run verify` делает то же и ещё требует, чтобы всё было закоммичено: правки, подготовленные к коммиту изменения и новые файлы. Сборка, которая что-то перегенерировала, его тоже роняет |
-| Тест | Маленькая программа, которая проверяет одно поведение и падает, если оно не такое |
-| Сторож | Тест, который проверяет не функцию продукта, а правило работы над ним. Например: «у двух агентов одни и те же запреты» |
-| Намеренная поломка | Проверка проверки: в копии проекта правило нарушают намеренно и смотрят, что сторож упал. Сторож, который не умеет падать, выглядит как защита, но не защищает |
-| Спецификация | Документ в `docs/specs/`, где записано, как продукт должен работать |
-| Скилл | Записанная процедура для агента на одно повторяемое действие: коммит, пуш, выпуск |
-| Ветка выпуска | Версия кода, которую получают пользователи. Работа идёт в другой ветке, ветке разработки |
-| Хук | Скрипт, который git сам запускает перед коммитом или пушем и который может их отклонить |
+| Build | The command `npm run build`: fast checks of code and documents and generation of documents. Guards, tests and planted violations are not part of it |
+| Full check | `npm run build`, then `npm test`. Green means all is well; failed means something is broken. `npm run verify` does the same and also requires everything to be committed: edits, changes staged for a commit and new files. A build that regenerated something fails it too |
+| Test | A small program that checks one behavior and fails if the behavior is different |
+| Guard | A test that checks not a feature of the product but a rule of working on it. For example: "the two agents have the same deny rules" |
+| Planted violation | A check of the check: in a copy of the project the rule is broken on purpose, and the guard is watched to fail. A guard that cannot fail looks like protection but does not protect |
+| Specification | A document in `docs/specs/` that records how the product must work |
+| Skill | A written procedure for the agent for one repeated action: a commit, a push, a release |
+| Release branch | The version of the code users get. Work happens on another branch, the development branch |
+| Hook | A script git runs by itself before a commit or a push, and which can refuse them |
 
-## Пятнадцать слоёв коротко
+## Fifteen layers in brief
 
-Каждый слой закрывает одну конкретную неприятность. «Кто держит» говорит, проверит ли нарушение машина или только текст.
+Every layer closes one specific trouble. "Held by" says whether a violation is checked by a machine or only by text.
 
-| # | Слой | От чего защищает | Кто держит |
+| # | Layer | Protects against | Held by |
 | --- | --- | --- | --- |
-| 1 | Один файл правил | Два агента работают по разным правилам | Машина |
-| 2 | Одинаковые настройки | Одному агенту можно то, что другому запрещено | Машина |
-| 3 | Один источник правды | Агент работает по устаревшему описанию или додумывает | Машина, частично |
-| 4 | Сборка перед работой | Задачу начинают на уже сломанном проекте | Машина, частично |
-| 5 | Сторожа | Правило нарушено, а обычные тесты зелёные | Машина |
-| 6 | Схема опасного процесса | Необратимое действие выполняется дважды или не в том порядке | Машина |
-| 7 | Готовые процедуры | Коммит и выпуск каждый раз делаются по-разному | Машина |
-| 8 | Защита ветки выпуска | Незаконченная работа случайно уходит пользователям | Машина |
-| 9 | Вопросы языком поведения | Агент спрашивает то, на что без чтения кода не ответить | Текст |
-| 10 | Браузер агента | Агент рассуждает о поведении, не видя его | Текст, частично машина |
-| 11 | Прогон перед выпуском | Перед выпуском каждый раз проверяют разное | Машина, частично |
-| 12 | Независимое ревью | Автор не видит своих ошибок | Текст |
-| 13 | Работа с двух компьютеров | На другом компьютере всё ведёт себя иначе | Машина |
-| 14 | Наружу только по вашему слову | Агент сам публикует или выпускает | Текст |
-| 15 | Наряд под целью | Агент объявляет «готово» раньше, чем сделано | Агент, пока цель запущена |
+| 1 | One rules file | Two agents work by different rules | Machine |
+| 2 | The same settings | One agent may do what the other is forbidden to do | Machine |
+| 3 | One source of truth | The agent works from an outdated description or makes things up | Machine, partly |
+| 4 | Build before work | A task starts on a project that is already broken | Machine, partly |
+| 5 | Guards | A rule is broken while ordinary tests are green | Machine |
+| 6 | A model of a dangerous process | An irreversible action runs twice or in the wrong order | Machine |
+| 7 | Ready-made procedures | Commit and release are done differently every time | Machine |
+| 8 | Release branch protection | Unfinished work reaches users by accident | Machine |
+| 9 | Questions in the language of behavior | The agent asks what cannot be answered without reading code | Text |
+| 10 | The agent's browser | The agent reasons about behavior without seeing it | Text, partly machine |
+| 11 | A run before release | Something different is checked before every release | Machine, partly |
+| 12 | Independent review | The author does not see their own mistakes | Text |
+| 13 | Working from two computers | Things behave differently on the other computer | Machine |
+| 14 | Outside only on your word | The agent publishes or releases on its own | Text |
+| 15 | A work order under a goal | The agent declares "done" before it is done | Agent, while the goal runs |
 
-## Слои подробно
+## The layers in detail
 
-Для каждого слоя: что может пойти не так, что делает слой, что видите вы. Файлы и проверки указаны последней строкой — их ищет агент, вам они не нужны.
+For each layer: what can go wrong, what the layer does, what you see. Files and checks are named in the last line — the agent looks for them; you do not need them.
 
-### 1. Один файл правил
+### 1. One rules file
 
-**Что может пойти не так.** У каждого агента свой файл правил. Вы поправили правило в одном, во втором оно осталось старым. Ошибки нет, просто один из агентов теперь работает по-другому.
+**What can go wrong.** Each agent has its own rules file. You fixed a rule in one; in the other it stayed old. There is no error, one of the agents just works differently now.
 
-**Что делает слой.** Оба агента читают один файл, `AGENTS.md`. Файлы, которые агент молча читает вместо него или поверх него, запрещены.
+**What the layer does.** Both agents read one file, `AGENTS.md`. Files the agent silently reads instead of it or on top of it are forbidden.
 
-**Что видите вы.** Ничего, пока правило соблюдается. Если агент заведёт вторую инструкцию, упадут тесты.
+**What you see.** Nothing, while the rule holds. If the agent creates a second instruction file, the tests fail.
 
-Файлы: `AGENTS.md`. Проверка: `both-front-ends-share-one-instruction-file`.
+Files: `AGENTS.md`. Check: `both-front-ends-share-one-instruction-file`.
 
-### 2. Одинаковые настройки
+### 2. The same settings
 
-**Что может пойти не так.** Одному агенту запрещено удалять папки целиком, другому нет. Что случится с проектом, зависит от того, какой агент сегодня открыт.
+**What can go wrong.** One agent is forbidden to delete whole folders, the other is not. What happens to the project depends on which agent is open today.
 
-**Что делает слой.** Запреты опасных команд, подключение браузера и выключенная собственная память агентов заданы для обоих одинаково. Собственная память выключена, потому что заметка, которую агент сохранил себе сам, становится вторым, невидимым файлом правил.
+**What the layer does.** Bans on dangerous commands, the browser connection and the agents' own memory turned off are set the same for both. Their own memory is off because a note the agent saved for itself becomes a second, invisible rules file.
 
-**Что видите вы.** Расхождение настроек роняет тесты.
+**What you see.** A mismatch in the settings fails the tests.
 
-Файлы: `.claude/settings.json`, `.mcp.json`, `.codex/config.toml`, `.codex/rules/project.rules`. Проверка: `both-front-ends-apply-the-same-settings`.
+Files: `.claude/settings.json`, `.mcp.json`, `.codex/config.toml`, `.codex/rules/project.rules`. Check: `both-front-ends-apply-the-same-settings`.
 
-### 3. Один источник правды
+### 3. One source of truth
 
-**Что может пойти не так.** Агент читает устаревший документ или не находит нужного и додумывает, как продукт должен работать.
+**What can go wrong.** The agent reads an outdated document, or does not find the one it needs and makes up how the product must work.
 
-**Что делает слой.** Как продукт должен работать, записано только в спецификациях. Для каждой спецификации сборка составляет оглавление с номерами строк, и агент читает только нужный раздел. Проверки следят, что все ссылки в правилах и спецификациях ведут на существующие файлы, а оглавление соответствует текущим текстам.
+**What the layer does.** How the product must work is written only in the specifications. For each specification the build makes an index with line numbers, and the agent reads only the section it needs. Checks make sure every link in the rules and specifications leads to an existing file and the table of contents matches the current texts. Everything in the repository is in one language, English, so every agent and every reader reads the same text; only the owner's work orders may be in the owner's language.
 
-**Что видите вы.** Мёртвая ссылка или устаревшее оглавление роняют тесты. Прочитал ли агент нужный раздел на самом деле, машина не видит.
+**What you see.** A dead link, an outdated index or a letter of a script other than Latin fails the tests; another language in Latin letters is left to review. Whether the agent really read the section it needed, the machine does not see.
 
-Файлы: `docs/specs/`, `docs/llm_context/`, `scripts/llm-context-map.js`. Проверки: `a-spec-reference-points-at-the-source-of-truth`, `the-index-matches-the-specs`.
+Files: `docs/specs/`, `docs/llm_context/`, `scripts/llm-context-map.js`. Checks: `a-spec-reference-points-at-the-source-of-truth`, `the-index-matches-the-specs`, `the-repository-text-stays-in-english`.
 
-### 4. Сборка перед работой
+### 4. Build before work
 
-**Что может пойти не так.** Агент начинает задачу на проекте, который уже сломан. Потом не понять, что сломал он, а что было до него. Или из сборки тихо убрали проверку: сборка стала быстрее и зелёной, потому что перестала проверять.
+**What can go wrong.** The agent starts a task on a project that is already broken. Afterwards you cannot tell what it broke from what was broken before. Or a check was quietly removed from the build: the build became faster and green because it stopped checking.
 
-**Что делает слой.** Каждая задача начинается со сборки. Если сборка упала, агент останавливается. Отдельный сторож ломает каждую проверку сборки в копии проекта и требует, чтобы сборка это заметила.
+**What the layer does.** Every task starts with the build. If the build fails, the agent stops. A separate guard breaks every check of the build in a copy of the project and requires the build to notice.
 
-**Что видите вы.** Агент сообщает, что сборка упала, и не продолжает. Запустил ли агент сборку в начале задачи, машина не видит: это правило инструкции.
+**What you see.** The agent reports that the build failed and does not continue. Whether the agent ran the build at the start of the task, the machine does not see: that is a rule of the instructions.
 
-Файлы: `package.json`, `scripts/check-workstation.js`, `scripts/check-syntax.js`, `scripts/check-console-routing.js`. Проверки: `the-build-keeps-every-gate`, `console-access-single-sink`.
+Files: `package.json`, `scripts/check-workstation.js`, `scripts/check-syntax.js`, `scripts/check-console-routing.js`. Checks: `the-build-keeps-every-gate`, `console-access-single-sink`.
 
-### 5. Сторожа
+### 5. Guards
 
-**Что может пойти не так.** Правило проекта нарушено, а обычные тесты зелёные. Например, агент поменял местами две строки, и письмо теперь уходит раньше, чем о нём сделана запись. Обычный тест этого не увидит: без сбоя между этими строками результат тот же.
+**What can go wrong.** A rule of the project is broken while ordinary tests are green. For example, the agent swapped two lines, and a letter now leaves before it is recorded. An ordinary test will not see it: without a failure between those lines the result is the same.
 
-**Что делает слой.** Каждое важное правило защищено отдельным тестом-сторожем. Имя сторожа это само правило, фразой. Для каждого сторожа есть намеренная поломка, которая доказывает, что он умеет падать.
+**What the layer does.** Every important rule is protected by its own guard test. The guard's name is the rule itself, as a sentence. Every guard has a planted violation that proves it can fail.
 
-**Что видите вы.** Полный список сторожей с правилами — в `docs/specs/GUARDS.md`. Команда `npm run demo:guards` показывает все намеренные поломки и какой сторож поймал каждую.
+**What you see.** The full list of guards with their rules is in `docs/specs/GUARDS.md`. The command `npm run demo:guards` shows every planted violation and which guard caught each.
 
-Файлы: `tests/guards/`, `scripts/lib/plants.js`, `docs/specs/GUARDS.md`. Проверки: `every-guard-states-its-rule`, `every-planted-violation-is-caught`.
+Files: `tests/guards/`, `scripts/lib/plants.js`, `docs/specs/GUARDS.md`. Checks: `every-guard-states-its-rule`, `every-planted-violation-is-caught`.
 
-### 6. Схема опасного процесса
+### 6. A model of a dangerous process
 
-**Что может пойти не так.** В продукте есть действие, которое нельзя отменить: письмо, платёж, публикация. При очередной правке порядок шагов незаметно меняется, и действие выполняется дважды. А когда что-то пошло не так, по логам не понять, где именно.
+**What can go wrong.** The product has an action that cannot be undone: a letter, a payment, a publication. During another edit the order of steps changes unnoticed, and the action runs twice. And when something goes wrong, the logs do not tell where.
 
-**Что делает слой.** Процесс описан схемой: какие бывают состояния и какие переходы между ними. Каждый переход пишет в лог свою метку. Сборка проверяет саму схему: необратимый шаг начинается только из состояния, записанного надёжно. Она же сверяет метки в коде со схемой — каждый переход схемы есть в коде, а в коде нет меток, которых нет в схеме, — и строит из схемы документ. Порядок шагов в коде сборка не проверяет. Порядок, который дорого нарушить, держит отдельный сторож: в примере это запись намерения раньше отправки.
+**What the layer does.** The process is described by a model: which states exist and which transitions lead between them. Every transition writes its own tag to the log. The build checks the model itself: an irreversible step starts only from a state recorded durably. It also matches the tags in the code against the model — every transition of the model is in the code, and the code has no tags the model lacks — and builds a document from the model. The build does not check the order of steps in the code. An order that is expensive to break is held by a separate guard: in the example, the intent is recorded before the send.
 
-**Что видите вы.** Документ со схемой процесса, `docs/specs/PROCESS-REMINDER.md`. Когда что-то сломалось, каждую строку лога можно найти в нём по метке, без кода.
+**What you see.** The document with the process model, `docs/specs/PROCESS-REMINDER.md`. When something breaks, every log line can be found in it by its tag, without code.
 
-Файлы: `example/process/reminder.fsm.json`, `scripts/fsm/`. Проверка: `every-transition-log-matches-the-process-model`.
+Files: `example/process/reminder.fsm.json`, `scripts/fsm/`. Check: `every-transition-log-matches-the-process-model`.
 
-### 7. Готовые процедуры
+### 7. Ready-made procedures
 
-**Что может пойти не так.** Коммит, пуш и выпуск агент каждый раз собирает заново. В один раз он забывает проверить, нет ли в коммите паролей, в другой ставит в коммит чужое имя автора.
+**What can go wrong.** The agent puts together commit, push and release anew every time. Once it forgets to check the commit for passwords, another time it puts someone else's author name on the commit.
 
-**Что делает слой.** Каждое повторяемое действие записано процедурой — скиллом, — одинаковой у обоих агентов. Процедуры, которые пишут в историю проекта или наружу, агент сам не запускает, только когда вы назвали их по имени.
+**What the layer does.** Every repeated action is written as a procedure — a skill — the same for both agents. Procedures that write to the project history or outside it are not started by the agent on its own, only when you name them.
 
-**Что видите вы.** Вы называете процедуру по имени, например commit или push, и агент выполняет записанный порядок. Расхождение процедур у двух агентов роняет тесты.
+**What you see.** You name a procedure, for example commit or push, and the agent follows the written sequence. A mismatch between the two agents' procedures fails the tests.
 
-Файлы: `.claude/skills/`, `.agents/skills/`, `scripts/check-staged-secrets.js`. Проверки: `both-front-ends-offer-the-same-workflows`, `the-commit-identity-has-one-source`, `a-staged-secret-is-reported-without-its-value`.
+Files: `.claude/skills/`, `.agents/skills/`, `scripts/check-staged-secrets.js`. Checks: `both-front-ends-offer-the-same-workflows`, `the-commit-identity-has-one-source`, `a-staged-secret-is-reported-without-its-value`.
 
-### 8. Защита ветки выпуска
+### 8. Release branch protection
 
-**Что может пойти не так.** Агент по привычке отправляет работу не в ту ветку, и пользователи получают незаконченное.
+**What can go wrong.** Out of habit the agent sends work to the wrong branch, and users get something unfinished.
 
-**Что делает слой.** Хуки отклоняют коммит и пуш в ветку выпуска, если выпуск не объявлен явно. Сторож не читает хук, а запускает его и смотрит, что он действительно отказывает. Перед выпуском `npm run verify` падает на любой незакоммиченной работе, включая новый файл, который забыли добавить: в выпуск попадает только то, что есть в коммите.
+**What the layer does.** Hooks refuse a commit and a push to the release branch unless a release is declared explicitly. The guard does not read the hook, it runs it and watches it actually refuse. Before a release, `npm run verify` fails on any uncommitted work, a new file someone forgot to add included: only what is in a commit goes into the release.
 
-**Что видите вы.** Случайный пуш в ветку выпуска не проходит. Это защита от ошибки, а не от решения: агент, который решил обойти хук, может это сделать.
+**What you see.** An accidental push to the release branch does not go through. This protects against a mistake, not against a decision: an agent that decided to bypass the hook can do it.
 
-Файлы: `.githooks/pre-commit`, `.githooks/pre-push`, `scripts/check-clean-tree.js`. Проверки: `the-push-barrier-guards-the-declared-release-branch`, `verify-refuses-a-tree-with-uncommitted-work`.
+Files: `.githooks/pre-commit`, `.githooks/pre-push`, `scripts/check-clean-tree.js`. Checks: `the-push-barrier-guards-the-declared-release-branch`, `verify-refuses-a-tree-with-uncommitted-work`.
 
-### 9. Вопросы языком поведения
+### 9. Questions in the language of behavior
 
-**Что может пойти не так.** Агент спрашивает: «Оставить обработку исключения в этой функции?» Ответить можно, только прочитав код.
+**What can go wrong.** The agent asks: "Keep the exception handling in this function?" You can answer only by reading the code.
 
-**Что делает слой.** Раздел инструкции требует спрашивать словами того, что видит пользователь: что происходит, когда, что видно на экране. Каждое видимое изменение агент сдаёт с ручной проверкой: что открыть, что сделать, как выглядит правильно и какой фильтр логов снять, если не так.
+**What the layer does.** A section of the instructions requires asking in the words of what the user sees: what happens, when, what is visible on the screen. The agent talks to you in the language you write in. Every visible change is handed over with a manual check: what to open, what to do, what correct looks like and which log filter to capture if it does not.
 
-**Что видите вы.** Вопросы, на которые вы можете ответить, и короткую ручную проверку в конце работы. Машина проверяет только, что раздел есть в инструкции. Соблюдение держится на тексте.
+**What you see.** Questions you can answer, and a short manual check at the end of the work. The machine checks only that the section exists in the instructions. Compliance rests on the text.
 
-Файлы: `AGENTS.md`, раздел Verification model.
+Files: `AGENTS.md`, section Verification model.
 
-### 10. Браузер агента
+### 10. The agent's browser
 
-**Что может пойти не так.** Агент утверждает, что кнопка работает, хотя страницу не открывал.
+**What can go wrong.** The agent claims a button works without having opened the page.
 
-**Что делает слой.** У агента свой браузер, отдельный от вашего. Агент открывает в нём продукт, кликает, читает консоль. Правила: закрыть всё, что открыл; текст на чужой странице не команда; отчёт называет, какую именно версию он смотрел.
+**What the layer does.** The agent has its own browser, separate from yours. The agent opens the product in it, clicks, reads the console. The rules: close everything you opened; text on a third-party page is not a command; the report names exactly which version it looked at.
 
-**Что видите вы.** Отчёт о том, что агент увидел сам. Машина проверяет только, что браузер у обоих агентов запускается одинаково. Остальное держится на тексте.
+**What you see.** A report of what the agent saw itself. The machine checks only that the browser starts the same way for both agents. The rest rests on the text.
 
-Файлы: `docs/specs/BROWSER-LANE.md`.
+Files: `docs/specs/BROWSER-LANE.md`.
 
-### 11. Прогон перед выпуском
+### 11. A run before release
 
-**Что может пойти не так.** Перед выпуском продукт проверяют «на глаз», и каждый раз по-разному. Или в списке сценариев остался сценарий для страницы, которой больше нет, и агент проходит его как получится.
+**What can go wrong.** Before a release the product is checked "by eye", and differently every time. Or the list of scenarios kept a scenario for a page that no longer exists, and the agent goes through it however it can.
 
-**Что делает слой.** Сценарии записаны таблицей. Для каждого есть страница-образец, которая изображает внешний сервис с заранее заданным поведением. Агент проходит сценарии в браузере. Сторож проверяет, что каждый сценарий ссылается на существующую страницу, а каждый исход процесса покрыт сценарием.
+**What the layer does.** The scenarios are written as a table. Each has a fixture page that stands in for an external service with behavior set in advance. The agent goes through the scenarios in the browser. A guard checks that every scenario points at an existing page and every outcome of the process is covered by a scenario.
 
-**Что видите вы.** Отчёт по каждому сценарию: что ожидалось и что наблюдалось. Как живые внешние сервисы ведут себя сегодня, прогон не доказывает.
+**What you see.** A report on every scenario: what was expected and what was observed. How live external services behave today, the run does not prove.
 
-Файлы: `docs/specs/REGRESSION.md`, `example/fixtures/`, `scripts/testserver.js`. Проверка: `every-regression-scenario-resolves-to-a-fixture-and-a-rule`.
+Files: `docs/specs/REGRESSION.md`, `example/fixtures/`, `scripts/testserver.js`. Check: `every-regression-scenario-resolves-to-a-fixture-and-a-rule`.
 
-### 12. Независимое ревью
+### 12. Independent review
 
-**Что может пойти не так.** Автор не видит своих ошибок. Агент, который написал код, проверяет его с теми же слепыми пятнами.
+**What can go wrong.** The author does not see their own mistakes. The agent that wrote the code checks it with the same blind spots.
 
-**Что делает слой.** Перед сдачей работу проверяет сессия, которая её не писала. В отчёте агент называет найденные замечания: какие исправлены, какие отклонены и почему.
+**What the layer does.** Before hand-off the work is checked by a session that did not write it. In the report the agent names the findings: which were fixed, which were dismissed, and why.
 
-**Что видите вы.** Список замечаний ревью в отчёте. Было ли ревью настоящим, машина проверить не может.
+**What you see.** The list of review findings in the report. Whether the review was real, the machine cannot check.
 
-Файлы: скилл `code-task-workflow`, шаг 5.
+Files: skill `code-task-workflow`, step 5.
 
-### 13. Работа с двух компьютеров
+### 13. Working from two computers
 
-**Что может пойти не так.** На втором компьютере другая версия Node, другие окончания строк в файлах, не подключены хуки. То, что работало на первом, на втором ломается или ведёт себя иначе.
+**What can go wrong.** The second computer has another Node version, other line endings in files, hooks not connected. What worked on the first breaks or behaves differently on the second.
 
-**Что делает слой.** Нужная версия Node записана в проекте. Сборка начинается с проверки компьютера: версия, хуки, автор коммитов. Процедура `resume-here` продолжает на этом компьютере работу, отправленную с другого, и ничего не теряет.
+**What the layer does.** The required Node version is written in the project. The build starts with a check of the computer: version, hooks, commit author. The `resume-here` procedure continues on this computer the work pushed from another one and loses nothing.
 
-**Что видите вы.** Если компьютер не готов, сборка падает и говорит, что исправить.
+**What you see.** If the computer is not ready, the build fails and says what to fix.
 
-Файлы: `.nvmrc`, `.gitattributes`, `scripts/check-workstation.js`, скилл `resume-here`.
+Files: `.nvmrc`, `.gitattributes`, `scripts/check-workstation.js`, skill `resume-here`.
 
-### 14. Наружу только по вашему слову
+### 14. Outside only on your word
 
-**Что может пойти не так.** Агент сам публикует, отправляет на GitHub или выпускает версию.
+**What can go wrong.** The agent publishes, pushes to GitHub or releases a version on its own.
 
-**Что делает слой.** Инструкция требует вашего подтверждения на всё, что уходит за пределы компьютера. Порядок выпуска записан в `docs/specs/RELEASE.md`.
+**What the layer does.** The instructions require your confirmation for everything that leaves the computer. The release sequence is written in `docs/specs/RELEASE.md`.
 
-**Что видите вы.** Агент останавливается и спрашивает. Машина защищает только ветку выпуска, слой 8. Остальное держится на тексте.
+**What you see.** The agent stops and asks. The machine protects only the release branch, layer 8. The rest rests on the text.
 
-Файлы: `AGENTS.md`, раздел Autonomy and approval, `docs/specs/RELEASE.md`.
+Files: `AGENTS.md`, section Autonomy and approval, `docs/specs/RELEASE.md`.
 
-### 15. Наряд под целью
+### 15. A work order under a goal
 
-**Что может пойти не так.** Агент останавливается на полпути или объявляет «готово», хотя проверил не всё.
+**What can go wrong.** The agent stops halfway, or declares "done" without having checked everything.
 
-**Что делает слой.** Наряд описывает результат словами поведения: что должно быть видно, чего не должно случиться. Вы запускаете его командой `/goal` с условием. Агент не остановится, пока не случится одно из трёх: он напечатал отчёт, где каждый пункт наряда подтверждён; он задал вам вопрос и ждёт ответа; закончился отведённый запас ходов.
+**What the layer does.** A work order describes the result in the words of behavior: what must be visible, what must not happen. You start it with the `/goal` command and a condition. The agent does not stop until one of three things happens: it has printed a report where every item of the work order is confirmed; it has asked you a question and is waiting for the answer; the allotted number of turns ran out.
 
-Кто решает, что условие выполнено, зависит от агента. В Claude Code это отдельная модель: после каждого хода она читает разговор и судит, файлов она не открывает. Поэтому условие требует напечатать отчёт в разговор. В Codex условие проверяет сам агент, который работал.
+Who decides that the condition is met depends on the agent. In Claude Code it is a separate model: after every turn it reads the conversation and judges; it opens no files. So the condition requires printing the report into the conversation. In Codex the condition is checked by the agent that did the work.
 
-**Что видите вы.** Агент работает до конца без ваших подталкиваний. Слой действует, только пока цель запущена, а в Codex проверка не независимая: ревью из слоя 12 цель не заменяет.
+**What you see.** The agent works to the end without your nudging. The layer acts only while the goal runs, and in Codex the check is not independent: a goal does not replace the review of layer 12.
 
-Файлы: `docs/WORK-ORDER-TEMPLATE.md`, наряды в `docs/work-orders/`, `docs/specs/AGENT-FRONT-ENDS.md`, раздел «Наряд под целью».
+Files: `docs/WORK-ORDER-TEMPLATE.md`, work orders in `docs/work-orders/`, `docs/specs/AGENT-FRONT-ENDS.md`, section "A work order under a goal".
 
-## Что держит машина, а что слово
+## What the machine holds and what the word holds
 
-Машина держит то, что оставляет след в файлах: нарушение роняет сборку или тесты, и агент не может сдать такую работу. Это слои 1–8, 11 и 13.
+The machine holds what leaves a trace in files: a violation fails the build or the tests, and the agent cannot hand over such work. These are layers 1–8, 11 and 13.
 
-Сам ход работы машина не видит. Агент может не прочитать спецификацию или не начать со сборки, и заметно это будет только по итоговым проверкам.
+The course of the work itself the machine does not see. The agent may skip reading the specification or not start with the build, and that shows only in the final checks.
 
-Слои 9, 12 и 14 держатся только на тексте инструкции: агент может их нарушить, и ничто не упадёт. Слой 10 машина проверяет только в части запуска браузера. Слой 15 работает, только когда цель запущена.
+Layers 9, 12 and 14 rest only on the text of the instructions: the agent can break them, and nothing fails. Layer 10 the machine checks only in the part about starting the browser. Layer 15 works only while a goal runs.
 
-Это не недоделка шаблона: эти правила так устроены. Если какое-то из них агент нарушает снова и снова, попросите превратить его в сторожа.
+This is not an unfinished part of the template: these rules are built this way. If the agent breaks one of them again and again, ask for it to be turned into a guard.
 
-## Что обвязка не обещает
+## What the harness does not promise
 
-- **Поведение чужих сервисов.** Страницы-образцы ничего не доказывают о живом сайте: он может измениться завтра.
-- **Качество кода.** Обвязка держит правила и поведение. Красивым код она не сделает.
-- **Правильность решений.** Что строить и зачем, решает человек.
-- **Полную замену приёмки.** Видимое изменение всё равно приходит с ручной проверкой: что открыть, что сделать, как выглядит правильно.
+- **The behavior of third-party services.** Fixture pages prove nothing about a live site: it may change tomorrow.
+- **Code quality.** The harness holds rules and behavior. It will not make the code beautiful.
+- **The rightness of decisions.** What to build and why is decided by a person.
+- **A full replacement for acceptance.** A visible change still comes with a manual check: what to open, what to do, what correct looks like.
 
-## Перенос в свой проект
+## Moving it into your project
 
-Шаблон не копируют целиком. Каждый слой закрывает одну неприятность и нужен только там, где она возможна. Порядок такой.
+The template is not copied whole. Every layer closes one trouble and is needed only where that trouble is possible. The order is this.
 
-1. **Сначала описание продукта.** Агент сам читает ваш код и расспрашивает вас языком поведения. Ответы он записывает спецификацией в `docs/specs/`:
-   - что делает продукт и для кого;
-   - что в нём нельзя отменить: деньги, письма, удаление, публикация;
-   - на какие внешние сервисы он опирается;
-   - что нельзя менять без вас;
-   - как новая версия доходит до пользователей и что делать, если она сломана.
+1. **First, the product description.** The agent reads your code itself and asks you questions in the language of behavior. It writes the answers down as a specification in `docs/specs/`:
+   - what the product does and for whom;
+   - what in it cannot be undone: money, letters, deletion, publication;
+   - which external services it relies on;
+   - what must not change without you;
+   - how a new version reaches users and what to do if it is broken.
 
-   Пример такой спецификации — `docs/specs/PRODUCT-REMINDER.md`. Описание продукта живёт только в спецификациях. В `AGENTS.md` его нет: там только правила работы агента.
-2. **Затем выбор слоёв.** Агент сверяет таблицу слоёв с описанием продукта и для каждого слоя отвечает, возможна ли в вашем продукте неприятность, которую он закрывает. Список утверждаете вы.
-3. **Перенос только утверждённого.** Проверки настраивают на код и язык вашего проекта. Ничего вашего не удаляют: если у проекта уже есть инструкция для агента, её сводят с `AGENTS.md` по вашему решению. Вместе со слоями переносят только их следы:
-   - в `AGENTS.md` остаются правила утверждённых слоёв. Правило, которое ссылается на неперенесённую проверку или скилл, убирают: иначе агент полагается на защиту, которой нет;
-   - в `scripts/lib/plants.js` остаются намеренные поломки утверждённых слоёв;
-   - в `docs/specs/GUARDS.md` остаются строки перенесённых сторожей;
-   - пример из `example/` не переносят. В `harness.config.json` `processModels`, `logging` и `syntaxRoots` указывают на код проекта, а `regression` ставят в `null`, пока своих образцов нет. Не переносят `docs/specs/PROCESS-REMINDER.md` и `docs/specs/PRODUCT-REMINDER.md`; сценарии примера из `docs/specs/REGRESSION.md` убирают, а `docs/specs/RELEASE.md` и раздел «Чистое состояние» в `docs/specs/BROWSER-LANE.md` переписывают под свой продукт.
+   An example of such a specification is `docs/specs/PRODUCT-REMINDER.md`. The product description lives only in the specifications. `AGENTS.md` does not hold it: it holds only the rules of the agent's work.
+2. **Then, choosing the layers.** The agent compares the table of layers with the product description and for each layer answers whether the trouble it closes is possible in your product. You approve the list.
+3. **Moving only what is approved.** The checks are set up for the code and the programming language of your project. Nothing of yours is deleted: if the project already has instructions for an agent, they are merged with `AGENTS.md` as you decide. Together with the layers only their traces move:
+   - `AGENTS.md` keeps the rules of the approved layers. A rule that points at a check or a skill that was not moved is removed: otherwise the agent relies on protection that does not exist;
+   - `scripts/lib/plants.js` keeps the planted violations of the approved layers;
+   - `docs/specs/GUARDS.md` keeps the rows of the moved guards;
+   - the example from `example/` does not move. In `harness.config.json`, `processModels`, `logging` and `syntaxRoots` point at the project's code, and `regression` is set to `null` until the project has its own fixtures. `docs/specs/PROCESS-REMINDER.md` and `docs/specs/PRODUCT-REMINDER.md` do not move; the example's scenarios are removed from `docs/specs/REGRESSION.md`, and `docs/specs/RELEASE.md` and the "Clean state" section of `docs/specs/BROWSER-LANE.md` are rewritten for your product;
+   - the guard `the-repository-text-stays-in-english` moves only if your project's documents are in English. If they are in another language, the guard, its row in `docs/specs/GUARDS.md` and its planted violations in `scripts/lib/plants.js` stay behind, and from the "Language" section of `AGENTS.md` only the first rule is removed: the agent still talks to you in your language.
 
-   - техническую часть делает агент. Хуки защиты ветки включает `scripts/install-hooks.js`, его запускает скрипт `prepare` в `package.json`: без него слой 8 не работает. Общие модули проверок из `scripts/lib/` переносятся вместе с любой проверкой. Вложенные `package.json` в `scripts/` и `tests/guards/` делают файлы обвязки модулями ES, поэтому файлы CommonJS проекта в этих папках переименовывают в `.cjs` и поправляют их вызовы. Скрипты `package.json` и `.gitignore` объединяют с вашими, ничего не удаляя.
+   - the technical part is done by the agent. The branch protection hooks are turned on by `scripts/install-hooks.js`, which the `prepare` script in `package.json` starts: without it layer 8 does not work. The shared check modules from `scripts/lib/` move together with any check. The nested `package.json` files in `scripts/` and `tests/guards/` make the harness files ES modules, so the project's CommonJS files in those folders are renamed to `.cjs` and their callers are fixed. The `package.json` scripts and `.gitignore` are merged with yours, with nothing removed.
 
-   После переноса `npm run build` и `npm test` зелёные. Путь к неперенесённому файлу покажет проверка ссылок. Правило, в котором пути нет, она не увидит, поэтому `AGENTS.md` агент сверяет с утверждённым списком слоёв сам.
-4. **Каждая перенесённая проверка показывает, что умеет падать.** Агент нарушает её правило в копии проекта и показывает падение. Проверка, которая не упала, не считается перенесённой.
+   After the move, `npm run build` and `npm test` are green. A path to a file that was not moved will be shown by the link check. A rule that holds no path it will not see, so the agent checks `AGENTS.md` against the approved list of layers itself.
+4. **Every moved check shows that it can fail.** The agent breaks its rule in a copy of the project and shows the failure. A check that did not fail does not count as moved.
 
-Всё сразу не нужно. Хватит трёх слоёв: один файл правил, сборка перед работой, защита ветки выпуска. Остальные слои добавляются, когда их неприятность случилась или стала возможной. Сторож слоя 1 требует, чтобы в `AGENTS.md` были пять разделов: HARD PROHIBITIONS, Before ANY code task, Verification model, Autonomy and approval, Workflow entry points. Поэтому разделы остаются, а из них убирают правила неперенесённых слоёв.
+You do not need everything at once. Three layers are enough: one rules file, build before work, release branch protection. The other layers are added when their trouble has happened or has become possible. The layer 1 guard requires `AGENTS.md` to have five sections: HARD PROHIBITIONS, Before ANY code task, Verification model, Autonomy and approval, Workflow entry points. So the sections stay, and the rules of the layers that were not moved are removed from them.
 
-Два решения принимают при переносе:
+Two decisions are made during the move:
 
-- **Один агент или два.** Если вы работаете с одним агентом, второго можно убрать целиком: его настройки, его копии скиллов, проверки, которые сверяют пары, и намеренные поломки в `scripts/lib/plants.js`, которые бьют по его файлам. Проверки оставшегося агента остаются, `npm test` после этого зелёный.
-- **Подтверждать ли каждое действие агента.** Шаблон разрешает агенту запускать команды без вашего подтверждения: иначе нельзя выдать наряд и уйти. Почему это осознанный риск, описано в `docs/specs/AGENT-FRONT-ENDS.md`. Если вы хотите подтверждать действия, поставьте у Codex в `.codex/config.toml` `approval_policy = "on-request"` и `sandbox_mode = "workspace-write"`, а у Claude Code уберите из `permissions.allow` в `.claude/settings.json` то, что хотите подтверждать, например `Bash(*)`, и не включайте режим обхода разрешений. Ждать придётся чаще, но обвязка продолжит работать: сторож сверяет запреты, а не режим.
+- **One agent or two.** If you work with one agent, the second can be removed entirely: its settings, its copies of the skills, the checks that compare pairs, and the planted violations in `scripts/lib/plants.js` that hit its files. The checks of the remaining agent stay, and `npm test` is green afterwards.
+- **Whether to confirm every action of the agent.** The template lets the agent run commands without your confirmation: otherwise you cannot hand over a work order and walk away. Why this is a deliberate risk is described in `docs/specs/AGENT-FRONT-ENDS.md`. If you want to confirm actions, set `approval_policy = "on-request"` and `sandbox_mode = "workspace-write"` for Codex in `.codex/config.toml`, and for Claude Code remove from `permissions.allow` in `.claude/settings.json` what you want to confirm, for example `Bash(*)`, and do not turn on the permission-bypass mode. You will wait more often, but the harness keeps working: the guard compares deny rules, not the mode.

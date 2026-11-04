@@ -1,26 +1,26 @@
 {
   "name": "reminder",
-  "title": "Процесс: отправка напоминания",
-  "purpose": "Модель необратимой отправки. Текст обязан уйти один раз, а отчёт обязан говорить только то, что доказано.",
+  "title": "Process: sending a reminder",
+  "purpose": "A model of an irreversible send. The text must leave once, and the report must say only what is proven.",
   "initial": "idle",
   "states": [
-    { "id": "idle", "meaning": "Запрос принят, ничего не записано" },
-    { "id": "intent-recorded", "meaning": "Намерение записано надёжно, после перезапуска оно будет видно", "durable": true },
-    { "id": "sending", "meaning": "Запрос ушёл провайдеру, исход неизвестен" },
-    { "id": "awaiting-proof", "meaning": "Провайдер принял запрос, доставка не доказана" },
-    { "id": "confirmed", "meaning": "Текст найден в ленте получателя", "terminal": true },
-    { "id": "unconfirmed", "meaning": "Принято, но доказательства нет; человек проверяет сам", "terminal": true },
-    { "id": "failed", "meaning": "Отправки не было", "terminal": true },
-    { "id": "duplicate-blocked", "meaning": "Намерение уже записано: возможно, текст ушёл; повтор запрещён, человек проверяет сам", "terminal": true }
+    { "id": "idle", "meaning": "The request is accepted, nothing is recorded" },
+    { "id": "intent-recorded", "meaning": "The intent is recorded durably and will be visible after a restart", "durable": true },
+    { "id": "sending", "meaning": "The request went to the provider, the outcome is unknown" },
+    { "id": "awaiting-proof", "meaning": "The provider accepted the request, delivery is not proven" },
+    { "id": "confirmed", "meaning": "The text is found in the recipient's feed", "terminal": true },
+    { "id": "unconfirmed", "meaning": "Accepted, but there is no proof; a person checks by hand", "terminal": true },
+    { "id": "failed", "meaning": "Nothing was sent", "terminal": true },
+    { "id": "duplicate-blocked", "meaning": "The intent is already recorded: the text may have left; a repeat is forbidden, a person checks by hand", "terminal": true }
   ],
   "transitions": [
-    { "id": "reminder.provider-unknown", "from": "idle", "to": "failed", "when": "Провайдера нет в конфиге" },
-    { "id": "reminder.duplicate-blocked", "from": "idle", "to": "duplicate-blocked", "when": "По этому напоминанию уже есть запись" },
-    { "id": "reminder.intent-recorded", "from": "idle", "to": "intent-recorded", "when": "Намерение записано" },
-    { "id": "reminder.send-started", "from": "intent-recorded", "to": "sending", "when": "Запрос отправляется", "irreversible": true },
-    { "id": "reminder.send-refused", "from": "sending", "to": "failed", "when": "Провайдер отказал" },
-    { "id": "reminder.send-accepted", "from": "sending", "to": "awaiting-proof", "when": "Провайдер принял запрос" },
-    { "id": "reminder.delivery-confirmed", "from": "awaiting-proof", "to": "confirmed", "when": "Текст найден в ленте" },
-    { "id": "reminder.delivery-unproven", "from": "awaiting-proof", "to": "unconfirmed", "when": "Срок вышел, текста в ленте нет" }
+    { "id": "reminder.provider-unknown", "from": "idle", "to": "failed", "when": "The provider is not in the config" },
+    { "id": "reminder.duplicate-blocked", "from": "idle", "to": "duplicate-blocked", "when": "This reminder already has a record" },
+    { "id": "reminder.intent-recorded", "from": "idle", "to": "intent-recorded", "when": "The intent is recorded" },
+    { "id": "reminder.send-started", "from": "intent-recorded", "to": "sending", "when": "The request is being sent", "irreversible": true },
+    { "id": "reminder.send-refused", "from": "sending", "to": "failed", "when": "The provider refused" },
+    { "id": "reminder.send-accepted", "from": "sending", "to": "awaiting-proof", "when": "The provider accepted the request" },
+    { "id": "reminder.delivery-confirmed", "from": "awaiting-proof", "to": "confirmed", "when": "The text is found in the feed" },
+    { "id": "reminder.delivery-unproven", "from": "awaiting-proof", "to": "unconfirmed", "when": "Time ran out, the text is not in the feed" }
   ]
 }

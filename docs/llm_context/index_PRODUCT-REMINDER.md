@@ -4,9 +4,9 @@
 
 | # | Section | Lines |
 | --- | --- | --- |
-| 1 | Продукт примера: напоминание | 1-4 |
-| 2 | Что делает и для кого | 5-17 |
-| 3 | Что нельзя отменить | 18-21 |
-| 4 | На какие внешние сервисы опирается | 22-25 |
-| 5 | Что нельзя менять без владельца | 26-36 |
-| 6 | Как новая версия доходит до пользователей | 37-40 |
+| 1 | The example's product: a reminder | 1-4 |
+| 2 | What it does and for whom | 5-17 |
+| 3 | What cannot be undone | 18-21 |
+| 4 | Which external services it relies on | 22-25 |
+| 5 | What must not change without the owner | 26-36 |
+| 6 | How a new version reaches users | 37-40 |

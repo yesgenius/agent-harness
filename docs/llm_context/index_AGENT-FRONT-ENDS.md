@@ -4,10 +4,10 @@
 
 | # | Section | Lines |
 | --- | --- | --- |
-| 1 | Два агента, один проект | 1-4 |
-| 2 | Один файл инструкций | 5-10 |
-| 3 | Файлы-тени | 11-24 |
-| 4 | Скиллы парами | 25-30 |
-| 5 | Настройки | 31-45 |
-| 6 | Права: осознанный риск | 46-53 |
-| 7 | Наряд под целью | 54-74 |
+| 1 | Two agents, one project | 1-4 |
+| 2 | One instruction file | 5-10 |
+| 3 | Shadow files | 11-24 |
+| 4 | Skills in pairs | 25-30 |
+| 5 | Settings | 31-45 |
+| 6 | Permissions: a deliberate risk | 46-53 |
+| 7 | A work order under a goal | 54-74 |
