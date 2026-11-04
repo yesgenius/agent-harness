@@ -8,6 +8,6 @@
 | 2 | One instruction file | 5-10 |
 | 3 | Shadow files | 11-24 |
 | 4 | Skills in pairs | 25-30 |
-| 5 | Settings | 31-45 |
-| 6 | Permissions: a deliberate risk | 46-53 |
-| 7 | A work order under a goal | 54-74 |
+| 5 | Settings | 31-46 |
+| 6 | Permissions: a deliberate risk | 47-54 |
+| 7 | A work order under a goal | 55-75 |

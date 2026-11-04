@@ -10,6 +10,13 @@ const EXAMPLE_GUARDS = 'example/tests/guards';
 const EXAMPLE = 'example';
 // A sentence in a language other than English, written as escapes so this file itself stays in English.
 const NON_ENGLISH_SENTENCE = '\u0412\u044b\u043f\u0443\u0441\u043a \u0434\u0435\u043b\u0430\u0435\u0442 \u0432\u043b\u0430\u0434\u0435\u043b\u0435\u0446.';
+// The browser approval in .codex/config.toml with the comment that explains it, removed together the
+// way a person would remove it.
+const BROWSER_APPROVAL_BLOCK = `# Every tool of the browser server runs without a prompt, as the other front-end allows the whole
+# server. Without this the agent asks about each tool, and the answer it remembers is written into
+# this tracked file, so a workflow stops on a change nobody asked for.
+default_tools_approval_mode = "approve"
+`;
 const NON_ENGLISH_WORD = '\u041f\u0420\u041e\u041f\u0423\u0429\u0415\u041d\u041e';
 
 /**
@@ -71,6 +78,24 @@ export const PLANTS = [
     story: "One agent's browser starts with a different command",
     path: '.mcp.json',
     edit: (text) => swap(text, '"command": "npx"', '"command": "bunx"'),
+    guard: `${GUARDS}/both-front-ends-apply-the-same-settings.test.js`,
+  },
+  {
+    story: 'One agent asks before every browser tool and writes the answers into the project',
+    path: '.codex/config.toml',
+    edit: (text) => swap(text, BROWSER_APPROVAL_BLOCK, ''),
+    guard: `${GUARDS}/both-front-ends-apply-the-same-settings.test.js`,
+  },
+  {
+    story: 'The agent remembered one browser tool approval in the project',
+    path: '.codex/config.toml',
+    edit: (text) => `${text}\n[mcp_servers.chrome-devtools.tools.click]\napproval_mode = "approve"\n`,
+    guard: `${GUARDS}/both-front-ends-apply-the-same-settings.test.js`,
+  },
+  {
+    story: 'One agent no longer runs browser tools without asking',
+    path: '.claude/settings.json',
+    edit: (text) => swap(text, '"WebSearch",\n      "mcp__chrome-devtools"', '"WebSearch"'),
     guard: `${GUARDS}/both-front-ends-apply-the-same-settings.test.js`,
   },
   {

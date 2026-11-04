@@ -26,3 +26,7 @@ args = [
   "--no-performance-crux"
 ]
 startup_timeout_sec = 180
+# Every tool of the browser server runs without a prompt, as the other front-end allows the whole
+# server. Without this the agent asks about each tool, and the answer it remembers is written into
+# this tracked file, so a workflow stops on a change nobody asked for.
+default_tools_approval_mode = "approve"

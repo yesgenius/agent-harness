@@ -9,7 +9,7 @@ The harness is protected by the guards in `tests/guards/`, the example by the gu
 | Guard | Rule | What breaks without it | Plants |
 | --- | --- | --- | --- |
 | `both-front-ends-share-one-instruction-file` | Both agents have one instruction file and no shadow files | A rule was fixed in one copy, the other agent works by the old one | 2 |
-| `both-front-ends-apply-the-same-settings` | Deny rules, the browser and auto-memory mean the same for both agents | One agent may do what the other is forbidden to do | 3 |
+| `both-front-ends-apply-the-same-settings` | Deny rules, the browser, its tool approvals and auto-memory mean the same for both agents | One agent may do what the other is forbidden to do, or asks about each browser tool and writes the answers into a tracked file, stopping the next workflow | 6 |
 | `both-front-ends-offer-the-same-workflows` | The skills of the two agents match byte for byte | A commit or release step exists for one agent only | 1 |
 | `a-spec-reference-points-at-the-source-of-truth` | Every path in the instructions, skills and specifications exists | The agent follows a link into nothing and makes the rest up | 1 |
 | `the-index-matches-the-specs` | The index in `docs/llm_context/` is built from the current specifications | The agent reads the wrong lines and is sure it read the right ones | 1 |

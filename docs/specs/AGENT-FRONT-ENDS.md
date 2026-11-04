@@ -34,12 +34,13 @@ Guard: `tests/guards/both-front-ends-offer-the-same-workflows.test.js`.
 | --- | --- | --- |
 | Command deny rules | `.claude/settings.json`, `permissions.deny` | `.codex/rules/project.rules` |
 | Browser tool | `.mcp.json` | `.codex/config.toml` |
+| Browser tool approval: every tool runs without a prompt | `permissions.allow`: `mcp__chrome-devtools` | `default_tools_approval_mode = "approve"` in the browser server table |
 | Effort | `effortLevel` | `model_reasoning_effort` |
 | Auto-memory | `autoMemoryEnabled: false` | `[features] memories = false` |
 
 Auto-memory is off because a note the agent saved for itself becomes a second source of rules. A rule lives in the repository, where both agents see it and the guards check it.
 
-Top-level TOML keys stand above the first table. A key that slipped inside a table stays valid and configures nothing.
+Top-level TOML keys stand above the first table. A key that slipped inside a table stays valid and configures nothing. `.codex/config.toml` holds only the tables the project declares: its own settings and one table per server in `.mcp.json`. The second agent writes an approval it remembers into this tracked file, so a tool it asks about leaves a change nobody asked for and stops the next workflow; that is why the browser server is approved whole.
 
 Guard: `tests/guards/both-front-ends-apply-the-same-settings.test.js`.
 
