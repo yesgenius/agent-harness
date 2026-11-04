@@ -15,7 +15,7 @@ npm install
 npm run demo:guards
 ```
 
-You need Node 26 LTS (`.nvmrc`). The demonstration breaks a copy of the repository with every planted violation from `scripts/lib/plants.js` and shows which check stopped each one. The working tree is not changed. `npm install` also points git in this clone at the hooks in `.githooks/` (the `prepare` script, the local `core.hooksPath` setting). If `harness.config.json` sets `gitIdentity`, it also writes the commit author's name and email into this clone.
+You need the Node version declared in `.nvmrc`. The demonstration breaks a copy of the repository with every planted violation from `scripts/lib/plants.js` and shows which check stopped each one. The working tree is not changed. `npm install` also points git in this clone at the hooks in `.githooks/` (the `prepare` script, the local `core.hooksPath` setting). If `harness.config.json` sets `gitIdentity`, it also writes the commit author's name and email into this clone.
 
 ```text
 caught    The barrier looks in place but no longer refuses
