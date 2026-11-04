@@ -1,6 +1,6 @@
 {
   "name": "agent-harness",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "private": true,
   "description": "A project harness that lets a product owner hand work to coding agents without reading the diff.",
   "license": "MIT",
